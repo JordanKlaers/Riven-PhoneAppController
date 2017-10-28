@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import LoginStatusMessage from './LoginStatusMessage';
+import MyProps from './LoginStatusMessage';
 import AuthButton from './AuthButton';
 
 const styles = StyleSheet.create({
@@ -15,8 +15,8 @@ const styles = StyleSheet.create({
 
 const MainScreen = () => (
   <View style={styles.container}>
-    <LoginStatusMessage />
-    <AuthButton />
+    <MyProps />
+    {/* <AuthButton /> */}
   </View>
 );
 

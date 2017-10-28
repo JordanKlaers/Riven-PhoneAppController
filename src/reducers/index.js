@@ -4,9 +4,9 @@ import { NavigationActions } from 'react-navigation';
 import { AppNavigator } from '../navigators/AppNavigator';
 
 // Start with two routes: The Main screen, with the Login screen on top.
-const firstAction = AppNavigator.router.getActionForPathAndParams('Main');
+const firstAction = AppNavigator.router.getActionForPathAndParams('Login');
 const tempNavState = AppNavigator.router.getStateForAction(firstAction);
-const secondAction = AppNavigator.router.getActionForPathAndParams('Login');
+const secondAction = AppNavigator.router.getActionForPathAndParams('Main');
 const initialNavState = AppNavigator.router.getStateForAction(
   secondAction,
   tempNavState
@@ -36,22 +36,22 @@ function nav(state = initialNavState, action) {
   return nextState || state;
 }
 
-const initialAuthState = { isLoggedIn: false };
-
-function auth(state = initialAuthState, action) {
-  switch (action.type) {
-    case 'Login':
-      return { ...state, isLoggedIn: true };
-    case 'Logout':
-      return { ...state, isLoggedIn: false };
-    default:
-      return state;
-  }
-}
+// const initialAuthState = { isLoggedIn: false }; //if i change just this to true, i can nav to the home screen showing im logged in, without actually logging in
+//
+// function auth(state = initialAuthState, action) {
+//   switch (action.type) {
+//     case 'Login':
+//       return { ...state, isLoggedIn: true };
+//     case 'Logout':
+//       return { ...state, isLoggedIn: false };
+//     default:
+//       return state;
+//   }
+// }
 
 const AppReducer = combineReducers({
   nav,
-  auth,
+  // auth,
 });
 
 export default AppReducer;

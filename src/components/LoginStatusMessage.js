@@ -12,14 +12,16 @@ const styles = StyleSheet.create({
   },
 });
 
-const LoginStatusMessage = ({ isLoggedIn, dispatch }) => {
-  if (!isLoggedIn) {
-    return <Text>Please log in</Text>;
-  }
+const myProps = ({ myProps }) => {
+  // if (!isLoggedIn) {
+  //
+  //   return <Text>Please log in</Text>;
+  // }
+  console.log(myProps);
   return (
     <View>
       <Text style={styles.welcome}>
-        {'You are "logged in" right now'}
+        {'You are "I messed with this whole file and the reducers for auth" right now'}
       </Text>
       <Button
         onPress={() =>
@@ -30,13 +32,13 @@ const LoginStatusMessage = ({ isLoggedIn, dispatch }) => {
   );
 };
 
-LoginStatusMessage.propTypes = {
-  isLoggedIn: PropTypes.bool.isRequired,
-  dispatch: PropTypes.func.isRequired,
+myProps.propTypes = {
+  // isLoggedIn: PropTypes.bool.isRequired,
+  // dispatch: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = state => ({
-  isLoggedIn: state.auth.isLoggedIn,
+  myProps: state,
 });
 
-export default connect(mapStateToProps)(LoginStatusMessage);
+export default connect(mapStateToProps)(myProps);
