@@ -13,12 +13,7 @@ const styles = StyleSheet.create({
 });
 
 const myProps = ({ myProps, dispatch }) => {
-  // if (!isLoggedIn) {
-  //
-  //   return <Text>Please log in</Text>;
-  // }
-  console.log(myProps);
-  console.log("-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_");
+  console.log(dispatch);
   return (
     <View>
       <Text style={styles.welcome}>
@@ -26,8 +21,10 @@ const myProps = ({ myProps, dispatch }) => {
         {}
       </Text>
       <Button
-        onPress={() =>
+        onPress={() => {
+          console.log("go to profile ay ----------------------------------------------------------");
           dispatch(NavigationActions.navigate({ routeName: 'Profile' }))}
+        }
         title="Profile"
       />
     </View>

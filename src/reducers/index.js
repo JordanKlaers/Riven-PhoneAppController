@@ -4,11 +4,10 @@ import { NavigationActions } from 'react-navigation';
 import { AppNavigator } from '../navigators/AppNavigator';
 
 // Start with two routes: The Main screen, with the Login screen on top.
-const firstAction = AppNavigator.router.getActionForPathAndParams('Login');
+const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
 const tempNavState = AppNavigator.router.getStateForAction(firstAction);
 const secondAction = AppNavigator.router.getActionForPathAndParams('Splash');
 const initialNavState = AppNavigator.router.getStateForAction(
-  secondAction,
   tempNavState
 );
 
@@ -28,6 +27,8 @@ function nav(state = initialNavState, action) {
       );
       break;
     default:
+    console.log("---------------------this is action type from reducers-------------------------");
+    console.log(action.type);
       nextState = AppNavigator.router.getStateForAction(action, state);
       break;
   }
