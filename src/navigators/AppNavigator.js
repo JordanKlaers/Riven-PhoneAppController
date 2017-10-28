@@ -8,14 +8,17 @@ import MainScreen from '../components/MainScreen';
 import ProfileScreen from '../components/ProfileScreen';
 
 export const AppNavigator = StackNavigator({
+  Splash: { screen: MainScreen },
   Login: { screen: LoginScreen },
-  Main: { screen: MainScreen },
   Profile: { screen: ProfileScreen },
 });
 
-const AppWithNavigationState = ({ dispatch, nav }) => (
-  <AppNavigator navigation={addNavigationHelpers({ dispatch, state: nav })} />
+const AppWithNavigationState = ({ dispatch, nav}) => (
+  <AppNavigator navigation={addNavigationHelpers({dispatch, state: nav})}/>
 );
+
+// navigation={addNavigationHelpers({ dispatch, state: nav })}
+//^^ add that line into AppNavigator to set up nav with state and stuff, also using the functions below
 
 AppWithNavigationState.propTypes = {
   dispatch: PropTypes.func.isRequired,
