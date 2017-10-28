@@ -6,29 +6,39 @@ import { AppNavigator } from '../navigators/AppNavigator';
 // Start with two routes: The Main screen, with the Login screen on top.
 const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
 const tempNavState = AppNavigator.router.getStateForAction(firstAction);
-const secondAction = AppNavigator.router.getActionForPathAndParams('Splash');
+// const secondAction = AppNavigator.router.getActionForPathAndParams('Profile');
 const initialNavState = AppNavigator.router.getStateForAction(
-  tempNavState
+  tempNavState,
+
 );
 
-function nav(state = initialNavState, action) {
+function nav(state = tempNavState, action) {
   let nextState;
-  switch (action.type) {
-    case 'Login':
+  state.myExtraBoop = "extra boop"
+  console.log("this is nav action");
+  console.log(action);
+  switch (action.routeName) {
+    // case 'Login':
+    //   nextState = AppNavigator.router.getStateForAction(
+    //     NavigationActions.back(),
+    //     state
+    //   );
+    //   break;
+    case 'ProfileScreen':
       nextState = AppNavigator.router.getStateForAction(
-        NavigationActions.back(),
+        NavigationActions.navigate({ routeName: 'Splash'}),
         state
       );
       break;
-    case 'Logout':
-      nextState = AppNavigator.router.getStateForAction(
-        NavigationActions.navigate({ routeName: 'Login' }),
-        state
-      );
-      break;
+    // case 'Logout':
+    //   nextState = AppNavigator.router.getStateForAction(
+    //     NavigationActions.navigate({ routeName: 'Login' }),
+    //     state
+    //   );
+    //   break;
     default:
-    console.log("---------------------this is action type from reducers-------------------------");
-    console.log(action.type);
+    // console.log("---------------------this is action type from reducers-------------------------");
+    // console.log(action.type);
       nextState = AppNavigator.router.getStateForAction(action, state);
       break;
   }
@@ -52,7 +62,7 @@ function nav(state = initialNavState, action) {
 
 const AppReducer = combineReducers({
   nav,
-  // auth,
+
 });
 
 export default AppReducer;

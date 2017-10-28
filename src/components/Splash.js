@@ -12,8 +12,9 @@ const styles = StyleSheet.create({
   },
 });
 
-const myProps = ({ myProps, dispatch }) => {
-  console.log(dispatch);
+const myProps = ({ myProps, dispatch, navigation}) => {
+  console.log("Props from splash page");
+  console.log(myProps);
   return (
     <View>
       <Text style={styles.welcome}>
@@ -22,8 +23,9 @@ const myProps = ({ myProps, dispatch }) => {
       </Text>
       <Button
         onPress={() => {
-          console.log("go to profile ay ----------------------------------------------------------");
-          dispatch(NavigationActions.navigate({ routeName: 'Profile' }))}
+          // console.log("go to profile ay ----------------------------------------------------------");
+        
+          dispatch(NavigationActions.navigate({ routeName: 'Profile'}))}
         }
         title="Profile"
       />
