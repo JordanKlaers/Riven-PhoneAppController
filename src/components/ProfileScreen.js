@@ -1,5 +1,8 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { connect } from 'react-redux';
+import PropTypes from 'prop-types';
+import { AppNavigator } from '../navigators/AppNavigator';
 
 const styles = StyleSheet.create({
   container: {
@@ -15,16 +18,34 @@ const styles = StyleSheet.create({
   },
 });
 
-const ProfileScreen = () => (
-  <View style={styles.container}>
-    <Text style={styles.welcome}>
-      Profile Screen
-    </Text>
-  </View>
-);
+// const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
+// const tempNavState = AppNavigator.router.getStateForAction(firstAction);
+
+const ProfileScreen = ({ profileProps, dispatch, navigation}) => {
+  // console.log(tempNavState);
+
+  console.log("got props working??", profileProps);
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.welcome}>
+        Profile Screen
+      </Text>
+    </View>
+  )
+};
+
+ProfileScreen.propTypes = {
+  // isLoggedIn: PropTypes.bool.isRequired,
+  dispatch: PropTypes.func.isRequired,
+};
 
 ProfileScreen.navigationOptions = {
   title: 'Profile',
 };
 
-export default ProfileScreen;
+const mapStateToProps = state => ({
+  profileProps: state,
+});
+
+export default connect(mapStateToProps)(ProfileScreen);

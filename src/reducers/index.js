@@ -4,30 +4,41 @@ import { NavigationActions } from 'react-navigation';
 import { AppNavigator } from '../navigators/AppNavigator';
 
 // Start with two routes: The Main screen, with the Login screen on top.
-const firstAction = AppNavigator.router.getActionForPathAndParams('Main');
+const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
 const tempNavState = AppNavigator.router.getStateForAction(firstAction);
-const secondAction = AppNavigator.router.getActionForPathAndParams('Login');
+// const secondAction = AppNavigator.router.getActionForPathAndParams('Profile');
 const initialNavState = AppNavigator.router.getStateForAction(
-  secondAction,
-  tempNavState
+  tempNavState,
+
 );
 
-function nav(state = initialNavState, action) {
+function nav(state = tempNavState, action) {
   let nextState;
-  switch (action.type) {
-    case 'Login':
+  state.myExtraBoop = "extra boop"
+  console.log("this is nav action");
+  console.log(action);
+  switch (action.routeName) {
+    // case 'Login':
+    //   nextState = AppNavigator.router.getStateForAction(
+    //     NavigationActions.back(),
+    //     state
+    //   );
+    //   break;
+    case 'ProfileScreen':
       nextState = AppNavigator.router.getStateForAction(
-        NavigationActions.back(),
+        NavigationActions.navigate({ routeName: 'Splash'}),
         state
       );
       break;
-    case 'Logout':
-      nextState = AppNavigator.router.getStateForAction(
-        NavigationActions.navigate({ routeName: 'Login' }),
-        state
-      );
-      break;
+    // case 'Logout':
+    //   nextState = AppNavigator.router.getStateForAction(
+    //     NavigationActions.navigate({ routeName: 'Login' }),
+    //     state
+    //   );
+    //   break;
     default:
+    // console.log("---------------------this is action type from reducers-------------------------");
+    // console.log(action.type);
       nextState = AppNavigator.router.getStateForAction(action, state);
       break;
   }
@@ -36,22 +47,22 @@ function nav(state = initialNavState, action) {
   return nextState || state;
 }
 
-const initialAuthState = { isLoggedIn: false };
-
-function auth(state = initialAuthState, action) {
-  switch (action.type) {
-    case 'Login':
-      return { ...state, isLoggedIn: true };
-    case 'Logout':
-      return { ...state, isLoggedIn: false };
-    default:
-      return state;
-  }
-}
+// const initialAuthState = { isLoggedIn: false }; //if i change just this to true, i can nav to the home screen showing im logged in, without actually logging in
+//
+// function auth(state = initialAuthState, action) {
+//   switch (action.type) {
+//     case 'Login':
+//       return { ...state, isLoggedIn: true };
+//     case 'Logout':
+//       return { ...state, isLoggedIn: false };
+//     default:
+//       return state;
+//   }
+// }
 
 const AppReducer = combineReducers({
   nav,
-  auth,
+
 });
 
 export default AppReducer;

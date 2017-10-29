@@ -28,6 +28,10 @@ const LoginScreen = ({ navigation }) => (
       onPress={() => navigation.dispatch({ type: 'Login' })}
       title="Log in"
     />
+    <Button
+      onPress={() => console.log(navigation)}
+      title="check object"
+    />
   </View>
 );
 
