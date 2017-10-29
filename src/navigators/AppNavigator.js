@@ -2,14 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { addNavigationHelpers, StackNavigator } from 'react-navigation';
-
-import LoginScreen from '../components/LoginScreen';
 import Splash from '../components/Splash';
 import ProfileScreen from '../components/ProfileScreen';
 
 export const AppNavigator = StackNavigator({
   Splash: { screen: Splash },
-  Login: { screen: LoginScreen },
   Profile: { screen: ProfileScreen },
 });
 

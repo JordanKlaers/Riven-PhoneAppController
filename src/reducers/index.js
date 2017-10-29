@@ -2,7 +2,7 @@ import { combineReducers } from 'redux';
 import { NavigationActions } from 'react-navigation';
 
 import { AppNavigator } from '../navigators/AppNavigator';
-
+import { BleManager } from 'react-native-ble-plx';
 // Start with two routes: The Main screen, with the Login screen on top.
 const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
 const tempNavState = AppNavigator.router.getStateForAction(firstAction);
@@ -11,12 +11,12 @@ const initialNavState = AppNavigator.router.getStateForAction(
   tempNavState,
 
 );
+tempNavState.manager = new BleManager();
 
 function nav(state = tempNavState, action) {
   let nextState;
   state.myExtraBoop = "extra boop"
-  console.log("this is nav action");
-  console.log(action);
+  // console.log(action);
   switch (action.routeName) {
     // case 'Login':
     //   nextState = AppNavigator.router.getStateForAction(
