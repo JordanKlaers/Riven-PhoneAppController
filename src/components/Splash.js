@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NavigationActions } from 'react-navigation';
+import { saveConnectionData } from '../actions'
+import { AsyncStorage } from 'react-native';
 
 const styles = StyleSheet.create({
   welcome: {
@@ -13,28 +15,37 @@ const styles = StyleSheet.create({
 });
 
 const myProps = ({ myProps, dispatch, navigation}) => {
-  console.log(myProps.nav.manager);
-  console.log("whats that ^^^^");
+
+  AsyncStorage.getItem('savedDeviceName').then((value)=>{
+    if (value !== null){
+      // We have data!!
+      console.log("retried storage correctly");
+      console.log(value);
+    }
+  }).catch((error) => {
+    // Error retrieving data
+    console.log("error with storage");
+  })
+
   var manager = myProps.nav.manager
+  var tempState = {};
   const subscription = manager.onStateChange((state) => {
         if (state === 'PoweredOn') {
-          console.log("PoweredOn");
-            // this.tempState.bluetoothState = "on";
-            // this.setState(this.tempState);
+          // console.log("PoweredOn");
+          // console.log(myProps);
+
             scanAndConnect();
             // subscription.remove();
         }
         else {
-          // this.tempState.bluetoothState = "off";
-          // this.setState(this.tempState);
           console.log("bluetooth not on");
         }
     }, true);
-  
+
   var scanAndConnect = () => {
-    console.log("scanning?");
+
     manager.startDeviceScan(null, null, (error, device) => {
-      console.log(device);
+
         if (error) {
             return
         }
@@ -43,23 +54,22 @@ const myProps = ({ myProps, dispatch, navigation}) => {
 
             manager.connectToDevice(device.id)
                 .then((device) => {
-                  // this.tempState.device = device;
+                  tempState.device = device;
                   return device.discoverAllServicesAndCharacteristics();
                 })
                 .then((device) => {
-                  // this.tempState.deviceID = device.id
+                  tempState.deviceID = device.id
                   return manager.servicesForDevice(device.id)
                 })
                 .then((services) => {
-                  console.log(services);
-                  // this.tempState.writeServiceUUID = services[2].uuid
-                  // this.tempState.deviceConnection = "Connected!!"
-                  console.log("connected");
-                  return manager.characteristicsForDevice(this.tempState.deviceID, this.tempState.writeServiceUUID)
+
+                  tempState.writeServiceUUID = services[2].uuid
+
+                  return manager.characteristicsForDevice(tempState.deviceID, tempState.writeServiceUUID)
                 }).then((characteristic)=> {
-                  console.log(characteristic);
-                  // this.tempState.writeCharacteristicUUID = characteristic[0].uuid
-                  // this.setState(this.tempState, ()=> {})
+
+                  tempState.writeCharacteristicUUID = characteristic[0].uuid
+                  dispatch(saveConnectionData(tempState))
                 }, (error) => {
                   console.log(error);
                 });

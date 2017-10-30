@@ -1,6 +1,6 @@
 import { combineReducers } from 'redux';
 import { NavigationActions } from 'react-navigation';
-
+import { AsyncStorage } from 'react-native';
 import { AppNavigator } from '../navigators/AppNavigator';
 import { BleManager } from 'react-native-ble-plx';
 // Start with two routes: The Main screen, with the Login screen on top.
@@ -17,13 +17,12 @@ function nav(state = tempNavState, action) {
   let nextState;
   state.myExtraBoop = "extra boop"
   // console.log(action);
-  switch (action.routeName) {
-    // case 'Login':
-    //   nextState = AppNavigator.router.getStateForAction(
-    //     NavigationActions.back(),
-    //     state
-    //   );
-    //   break;
+  switch (action.type) {
+    case 'Custom Action':
+      nextState = Object.assign({}, state, {
+        Custom_Action_KEY: "the customAction created this key"
+      })
+      break;
     case 'ProfileScreen':
       nextState = AppNavigator.router.getStateForAction(
         NavigationActions.navigate({ routeName: 'Splash'}),
@@ -38,7 +37,7 @@ function nav(state = tempNavState, action) {
     //   break;
     default:
     // console.log("---------------------this is action type from reducers-------------------------");
-    // console.log(action.type);
+    console.log(action);
       nextState = AppNavigator.router.getStateForAction(action, state);
       break;
   }
@@ -48,7 +47,43 @@ function nav(state = tempNavState, action) {
 }
 
 // const initialAuthState = { isLoggedIn: false }; //if i change just this to true, i can nav to the home screen showing im logged in, without actually logging in
-//
+  // var getDeviceNameFromStorage = AsyncStorage.getItem('savedDeviceName').then((value)=>{
+  //     console.log("this is for inistal bluetooth state");
+  //     console.log(value);
+  //       return value
+  //     }).catch((err)=>{
+  //       console.log(err);
+  //     })
+
+  var getDeviceNameFromStorage = AsyncStorage.getAllKeys().then((value)=>{
+      console.log("all saved storagekeys");
+      console.log(value);
+        return value
+      }).catch((err)=>{
+        console.log(err);
+      })
+
+
+  // const initalBluetoothState = { deviceNameForAutoConnection:  }
+
+  function bluetoothReducer(state={}, action) {
+    switch (action.type) {
+      case 'Save Connection Data':
+        console.log("save connection data in the reducer");
+        console.log(action.connectionData);
+        console.log(state);
+        return { ...state, ...action.connectionData };
+      case 'Saving Device Name For Auto Connection':
+        AsyncStorage.setItem('savedDeviceName', action.deviceName).then(()=>{
+          return { ...state, ...action.deviceName };
+        })
+
+      default:
+      console.log(action);
+      console.log("default ^^");
+        return state;
+     }
+  }
 // function auth(state = initialAuthState, action) {
 //   switch (action.type) {
 //     case 'Login':
@@ -62,7 +97,7 @@ function nav(state = tempNavState, action) {
 
 const AppReducer = combineReducers({
   nav,
-
+  bluetoothReducer
 });
 
 export default AppReducer;

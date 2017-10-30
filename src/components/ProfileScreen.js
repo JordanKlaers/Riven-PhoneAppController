@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, AsyncStorage } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
+import { customAction } from '../actions'
 
 const styles = StyleSheet.create({
   container: {
@@ -18,19 +19,40 @@ const styles = StyleSheet.create({
   },
 });
 
-// const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
-// const tempNavState = AppNavigator.router.getStateForAction(firstAction);
+
 
 const ProfileScreen = ({ profileProps, dispatch, navigation}) => {
   // console.log(tempNavState);
-
-  console.log("got props working??", profileProps);
-
+  AsyncStorage.getItem('savedDeviceName').then((value)=>{
+    if (value !== null){
+      // We have data!!
+      console.log("retried storage correctly");
+      console.log(value);
+    }
+  }).catch((error) => {
+    // Error retrieving data
+    console.log("error with storage");
+  })
+  
+console.log(profileProps.bluetoothReducer);
+var text= "placeholder"
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
         Profile Screen
       </Text>
+      <Button onPress={()=> dispatch(customAction())} title="execute custom action" />
+      <TextInput
+       style={{height: 40, width: 200, borderColor: 'gray', borderWidth: 1}}
+       onChangeText={async (value) => {
+         console.log(value);
+          try {
+            await AsyncStorage.setItem('savedDeviceName', value);
+          } catch (error) {
+            console.log(error);
+          }
+       }}
+     />
     </View>
   )
 };
