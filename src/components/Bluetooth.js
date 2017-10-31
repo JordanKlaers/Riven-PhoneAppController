@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
 
 
 
-const ProfileScreen = ({ profileProps, dispatch, navigation}) => {
+const Bluetooth = ({ profileProps, dispatch, navigation}) => {
   // console.log(tempNavState);
   AsyncStorage.getItem('savedDeviceName').then((value)=>{
     if (value !== null){
@@ -33,7 +33,7 @@ const ProfileScreen = ({ profileProps, dispatch, navigation}) => {
     // Error retrieving data
     console.log("error with storage");
   })
-  
+
 console.log(profileProps.bluetoothReducer);
 var text= "placeholder"
   return (
@@ -57,17 +57,23 @@ var text= "placeholder"
   )
 };
 
-ProfileScreen.propTypes = {
+Bluetooth.propTypes = {
   // isLoggedIn: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 
-ProfileScreen.navigationOptions = {
-  title: 'Profile',
+Bluetooth.navigationOptions = {
+  title: 'Bluetooth',
+  header: null
 };
+
+const navigationOptions = {
+    tabBarLabel: 'TestTabNav',
+    header: null
+  }
 
 const mapStateToProps = state => ({
   profileProps: state,
 });
 
-export default connect(mapStateToProps)(ProfileScreen);
+export default connect(mapStateToProps)(Bluetooth);

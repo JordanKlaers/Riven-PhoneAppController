@@ -14,7 +14,11 @@ const styles = StyleSheet.create({
   },
 });
 
-const myProps = ({ myProps, dispatch, navigation}) => {
+
+
+const Splash = ({ Props, dispatch, navigation}) => {
+
+
 
   AsyncStorage.getItem('savedDeviceName').then((value)=>{
     if (value !== null){
@@ -27,18 +31,17 @@ const myProps = ({ myProps, dispatch, navigation}) => {
     console.log("error with storage");
   })
 
-  var manager = myProps.nav.manager
+  var manager = Props.nav.manager
   var tempState = {};
   const subscription = manager.onStateChange((state) => {
         if (state === 'PoweredOn') {
           // console.log("PoweredOn");
           // console.log(myProps);
-
             scanAndConnect();
             // subscription.remove();
         }
         else {
-          console.log("bluetooth not on");
+        
         }
     }, true);
 
@@ -77,6 +80,8 @@ const myProps = ({ myProps, dispatch, navigation}) => {
     });
   }
 
+
+
   return (
     <View>
       <Text style={styles.welcome}>
@@ -87,7 +92,7 @@ const myProps = ({ myProps, dispatch, navigation}) => {
         onPress={() => {
           // console.log("go to profile ay ----------------------------------------------------------");
 
-          dispatch(NavigationActions.navigate({ routeName: 'Profile'}))}
+          dispatch(NavigationActions.navigate({ routeName: 'TabNav'}))}
         }
         title="I dont like that ^^ take me somewhere else"
       />
@@ -95,10 +100,13 @@ const myProps = ({ myProps, dispatch, navigation}) => {
   );
 };
 
-myProps.propTypes = {
+Splash.propTypes = {
   // isLoggedIn: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
+Splash.navigationOptions = {
+  header: null
+}
 
 // const mapDispatchToProps = dispatch => ({
 //
@@ -107,8 +115,8 @@ myProps.propTypes = {
 // });
 
 const mapStateToProps = state => ({
-  myProps: state,
+  Props: state,
   manager: state.manager
 });
 
-export default connect(mapStateToProps)(myProps);
+export default connect(mapStateToProps)(Splash);

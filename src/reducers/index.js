@@ -3,6 +3,7 @@ import { NavigationActions } from 'react-navigation';
 import { AsyncStorage } from 'react-native';
 import { AppNavigator } from '../navigators/AppNavigator';
 import { BleManager } from 'react-native-ble-plx';
+import  BluetoothReducer  from './BluetoothReducer.js'
 // Start with two routes: The Main screen, with the Login screen on top.
 const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
 const tempNavState = AppNavigator.router.getStateForAction(firstAction);
@@ -54,50 +55,40 @@ function nav(state = tempNavState, action) {
   //     }).catch((err)=>{
   //       console.log(err);
   //     })
-
-  var getDeviceNameFromStorage = AsyncStorage.getAllKeys().then((value)=>{
-      console.log("all saved storagekeys");
-      console.log(value);
-        return value
-      }).catch((err)=>{
-        console.log(err);
-      })
-
-
-  // const initalBluetoothState = { deviceNameForAutoConnection:  }
-
-  function bluetoothReducer(state={}, action) {
-    switch (action.type) {
-      case 'Save Connection Data':
-        console.log("save connection data in the reducer");
-        console.log(action.connectionData);
-        console.log(state);
-        return { ...state, ...action.connectionData };
-      case 'Saving Device Name For Auto Connection':
-        AsyncStorage.setItem('savedDeviceName', action.deviceName).then(()=>{
-          return { ...state, ...action.deviceName };
-        })
-
-      default:
-      console.log(action);
-      console.log("default ^^");
-        return state;
-     }
-  }
-// function auth(state = initialAuthState, action) {
-//   switch (action.type) {
-//     case 'Login':
-//       return { ...state, isLoggedIn: true };
-//     case 'Logout':
-//       return { ...state, isLoggedIn: false };
-//     default:
-//       return state;
-//   }
-// }
+  //
+  // var getDeviceNameFromStorage = AsyncStorage.getAllKeys().then((value)=>{
+  //     console.log("all saved storagekeys");
+  //     console.log(value);
+  //       return value
+  //     }).catch((err)=>{
+  //       console.log(err);
+  //     })
+  //
+  //
+  // // const initalBluetoothState = { deviceNameForAutoConnection:  }
+  //
+  // function bluetoothReducer(state={}, action) {
+  //   switch (action.type) {
+  //     case 'Save Connection Data':
+  //       console.log("save connection data in the reducer");
+  //       console.log(action.connectionData);
+  //       console.log(state);
+  //       return { ...state, ...action.connectionData };
+  //     case 'Saving Device Name For Auto Connection':
+  //       AsyncStorage.setItem('savedDeviceName', action.deviceName).then(()=>{
+  //         return { ...state, ...action.deviceName };
+  //       })
+  //
+  //     default:
+  //     console.log(action);
+  //     console.log("default ^^");
+  //       return state;
+  //    }
+  // }
 
 const AppReducer = combineReducers({
   nav,
-  bluetoothReducer
+  BluetoothReducer
 });
 
 export default AppReducer;

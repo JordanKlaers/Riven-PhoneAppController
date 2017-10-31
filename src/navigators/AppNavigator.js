@@ -1,13 +1,31 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { addNavigationHelpers, StackNavigator } from 'react-navigation';
+import { addNavigationHelpers, StackNavigator, TabNavigator } from 'react-navigation';
 import Splash from '../components/Splash';
-import ProfileScreen from '../components/ProfileScreen';
+import Bluetooth from '../components/Bluetooth';
+import Controller from '../components/Controller'
+
+
+const TabNav = TabNavigator({
+    Controller : {
+      screen: Controller
+    },
+    bluetooth: {
+      screen: Bluetooth,
+    },
+  }, {
+    tabBarPosition: 'top',
+    animationEnabled: true,
+    tabBarOptions: {
+      activeTintColor: '#e91e63',
+    },
+  });
 
 export const AppNavigator = StackNavigator({
   Splash: { screen: Splash },
-  Profile: { screen: ProfileScreen },
+  TabNav : { screen: TabNav}
+
 });
 
 const AppWithNavigationState = ({ dispatch, nav}) => (
