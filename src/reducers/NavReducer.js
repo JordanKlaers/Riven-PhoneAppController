@@ -25,9 +25,6 @@ function NavReducer(state = tempNavState, action) {
       );
       break;
     default:
-    // console.log("---------------------this is action type from reducers-------------------------");
-    console.log(action);
-    console.log(state);
       nextState = AppNavigator.router.getStateForAction(action, state);
       break;
   }

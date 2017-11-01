@@ -23,17 +23,6 @@ const styles = StyleSheet.create({
 
 const Bluetooth = ({ Props, dispatch, navigation}) => {
 
-  AsyncStorage.getItem('savedDeviceName').then((value)=>{
-    if (value !== null){
-
-      //console.log("retried storage correctly");
-      //console.log(value);
-    }
-  }).catch((error) => {
-    // Error retrieving data
-    console.log("error with storage");
-  })
-
 var text= "placeholder"
   return (
     <View style={styles.container}>

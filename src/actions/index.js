@@ -10,3 +10,18 @@ export const saveConnectionData = (connectionData) => {
     connectionData
   }
 }
+
+export const saveBluetoothState = (state) => {
+  return {
+    type: 'Save Bluetooth State',
+    state
+  }
+}
+
+export const saveDeviceNameFROMStorage = (deviceName) => {
+  
+  return {
+    type: 'Save Device Name From Storage',
+    deviceName
+  }
+}
