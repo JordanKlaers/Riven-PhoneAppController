@@ -21,20 +21,19 @@ const styles = StyleSheet.create({
 
 
 
-const Bluetooth = ({ profileProps, dispatch, navigation}) => {
-  // console.log(tempNavState);
+const Bluetooth = ({ Props, dispatch, navigation}) => {
+
   AsyncStorage.getItem('savedDeviceName').then((value)=>{
     if (value !== null){
-      // We have data!!
-      console.log("retried storage correctly");
-      console.log(value);
+
+      //console.log("retried storage correctly");
+      //console.log(value);
     }
   }).catch((error) => {
     // Error retrieving data
     console.log("error with storage");
   })
 
-console.log(profileProps.bluetoothReducer);
 var text= "placeholder"
   return (
     <View style={styles.container}>
@@ -45,7 +44,6 @@ var text= "placeholder"
       <TextInput
        style={{height: 40, width: 200, borderColor: 'gray', borderWidth: 1}}
        onChangeText={async (value) => {
-         console.log(value);
           try {
             await AsyncStorage.setItem('savedDeviceName', value);
           } catch (error) {
@@ -58,7 +56,6 @@ var text= "placeholder"
 };
 
 Bluetooth.propTypes = {
-  // isLoggedIn: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 
@@ -73,7 +70,7 @@ const navigationOptions = {
   }
 
 const mapStateToProps = state => ({
-  profileProps: state,
+  Props: state,
 });
 
 export default connect(mapStateToProps)(Bluetooth);

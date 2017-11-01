@@ -18,68 +18,64 @@ const styles = StyleSheet.create({
 
 const Splash = ({ Props, dispatch, navigation}) => {
 
+  console.log(navigation);
 
-
-  AsyncStorage.getItem('savedDeviceName').then((value)=>{
-    if (value !== null){
-      // We have data!!
-      console.log("retried storage correctly");
-      console.log(value);
-    }
-  }).catch((error) => {
-    // Error retrieving data
-    console.log("error with storage");
-  })
-
-  var manager = Props.nav.manager
-  var tempState = {};
-  const subscription = manager.onStateChange((state) => {
-        if (state === 'PoweredOn') {
-          // console.log("PoweredOn");
-          // console.log(myProps);
-            scanAndConnect();
-            // subscription.remove();
-        }
-        else {
-        
-        }
-    }, true);
-
-  var scanAndConnect = () => {
-
-    manager.startDeviceScan(null, null, (error, device) => {
-
-        if (error) {
-            return
-        }
-        if (device.name === 'raspberrypi') {
-            manager.stopDeviceScan();
-
-            manager.connectToDevice(device.id)
-                .then((device) => {
-                  tempState.device = device;
-                  return device.discoverAllServicesAndCharacteristics();
-                })
-                .then((device) => {
-                  tempState.deviceID = device.id
-                  return manager.servicesForDevice(device.id)
-                })
-                .then((services) => {
-
-                  tempState.writeServiceUUID = services[2].uuid
-
-                  return manager.characteristicsForDevice(tempState.deviceID, tempState.writeServiceUUID)
-                }).then((characteristic)=> {
-
-                  tempState.writeCharacteristicUUID = characteristic[0].uuid
-                  dispatch(saveConnectionData(tempState))
-                }, (error) => {
-                  console.log(error);
-                });
-        }
-    });
-  }
-
+  // AsyncStorage.getItem('savedDeviceName').then((value)=>{
+  //   if (value !== null){
+  //   }
+  // }).catch((error) => {
+  //   console.log("error with storage");
+  // })
+  //
+  // var manager = Props.nav.manager
+  // var tempState = {};
+  // const subscription = manager.onStateChange((state) => {
+  //       if (state === 'PoweredOn') {
+  //         // console.log("PoweredOn");
+  //         // console.log(myProps);
+  //           scanAndConnect();
+  //           // subscription.remove();
+  //       }
+  //       else {
+  //
+  //       }
+  //   }, true);
+  //
+  // var scanAndConnect = () => {
+  //
+  //   manager.startDeviceScan(null, null, (error, device) => {
+  //
+  //       if (error) {
+  //           return
+  //       }
+  //       if (device.name === 'raspberrypi') {
+  //           manager.stopDeviceScan();
+  //
+  //           manager.connectToDevice(device.id)
+  //               .then((device) => {
+  //                 tempState.device = device;
+  //                 return device.discoverAllServicesAndCharacteristics();
+  //               })
+  //               .then((device) => {
+  //                 tempState.deviceID = device.id
+  //                 return manager.servicesForDevice(device.id)
+  //               })
+  //               .then((services) => {
+  //
+  //                 tempState.writeServiceUUID = services[2].uuid
+  //
+  //                 return manager.characteristicsForDevice(tempState.deviceID, tempState.writeServiceUUID)
+  //               }).then((characteristic)=> {
+  //
+  //                 tempState.writeCharacteristicUUID = characteristic[0].uuid
+  //                 dispatch(saveConnectionData(tempState))
+  //               }, (error) => {
+  //                 console.log(error);
+  //               });
+  //       }
+  //   });
+  // }
+  //
 
 
   return (
@@ -92,8 +88,12 @@ const Splash = ({ Props, dispatch, navigation}) => {
         onPress={() => {
           // console.log("go to profile ay ----------------------------------------------------------");
 
-          dispatch(NavigationActions.navigate({ routeName: 'TabNav'}))}
-        }
+          dispatch(NavigationActions.navigate({
+            routeName: 'TabNav',
+            action: NavigationActions.navigate({ routeName: 'bluetooth'})
+          }))
+        }}
+
         title="I dont like that ^^ take me somewhere else"
       />
     </View>
@@ -101,22 +101,16 @@ const Splash = ({ Props, dispatch, navigation}) => {
 };
 
 Splash.propTypes = {
-  // isLoggedIn: PropTypes.bool.isRequired,
   dispatch: PropTypes.func.isRequired,
 };
 Splash.navigationOptions = {
   header: null
 }
 
-// const mapDispatchToProps = dispatch => ({
-//
-//   toProfile: () =>
-//     dispatch(NavigationActions.navigate({ routeName: 'Profile' })),
-// });
-
 const mapStateToProps = state => ({
   Props: state,
-  manager: state.manager
+  manager: state.manager,
+  bluetooth: state.bluetoothReducer
 });
 
 export default connect(mapStateToProps)(Splash);

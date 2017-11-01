@@ -11,19 +11,16 @@ import { BleManager } from 'react-native-ble-plx';
         console.log(err);
       })
 
+  var bluetoothManager = new BleManager();
 
-  function BluetoothReducer(state={}, action) {
+  function BluetoothReducer(state= bluetoothManager, action) {
     switch (action.type) {
-      case 'Save Connection Data':
-        console.log("save connection data in the reducer");
-        console.log(action.connectionData);
-        console.log(state);
+      case 'Save Connection Data':                     //need to save so we can send data to the service
         return { ...state, ...action.connectionData };
       case 'Saving Device Name For Auto Connection':
         AsyncStorage.setItem('savedDeviceName', action.deviceName).then(()=>{
           return { ...state, ...action.deviceName };
         })
-
       default:
       console.log(action);
       console.log("default ^^");
