@@ -36,15 +36,12 @@ import { BleManager } from 'react-native-ble-plx';
           state.subscription = action.state
         return { ...state };
       case 'Save Device Name From Storage':
-      console.log("device name from storage");
         state.deviceNameFromStorage = action.deviceName
         return { ...state };
       case 'Only Redirect Once':
-      console.log("redirect once");
         state.shouldRedirect = false;
         return { ...state };
       default:
-console.log('default');
         return state;
      }
   }

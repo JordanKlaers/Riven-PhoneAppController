@@ -25,6 +25,9 @@ function NavReducer(state = tempNavState, action) {
       );
       break;
     default:
+    console.log("nav reducer default");
+    console.log(state);
+    console.log(action);
       nextState = AppNavigator.router.getStateForAction(action, state);
       break;
   }

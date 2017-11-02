@@ -17,17 +17,19 @@ const styles = StyleSheet.create({
 
 
 const Splash = ({ Props, dispatch, navigation}) => {
-
-  // if(Props.BluetoothReducer.deviceNameFromStorage != null && Props.BluetoothReducer.subscription != null){
-  //   if ( Props.BluetoothReducer.deviceNameFromStorage == "noSavedDeviceName" || Props.BluetoothReducer.subscription == false && Props.BluetoothReducer.shouldRedirect == true){
-  //
-  //   }
-  //   else {
-  //     // dispatch(NavigationActions.navigate({
-  //     //   routeName: 'TabNav'
-  //     // }))
-  //   }
-  // }
+  
+  if(Props.BluetoothReducer.deviceNameFromStorage != null && Props.BluetoothReducer.subscription != null){
+    if ( Props.BluetoothReducer.deviceNameFromStorage == "noSavedDeviceName" || Props.BluetoothReducer.subscription == false && Props.BluetoothReducer.shouldRedirect == true){
+      // dispatch(NavigationActions.navigate({
+      //   routeName: 'TabNav'
+      // }))
+    }
+    else {
+      // dispatch(NavigationActions.navigate({
+      //   routeName: 'TabNav'
+      // }))
+    }
+  }
 
 
 
