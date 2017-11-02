@@ -17,17 +17,14 @@ const styles = StyleSheet.create({
 
 
 const Splash = ({ Props, dispatch, navigation}) => {
-  
+  // console.log(Props.NavReducer.shouldRedirect);
+
   if(Props.BluetoothReducer.deviceNameFromStorage != null && Props.BluetoothReducer.subscription != null){
-    if ( Props.BluetoothReducer.deviceNameFromStorage == "noSavedDeviceName" || Props.BluetoothReducer.subscription == false && Props.BluetoothReducer.shouldRedirect == true){
-      // dispatch(NavigationActions.navigate({
-      //   routeName: 'TabNav'
-      // }))
+    if ( Props.BluetoothReducer.deviceNameFromStorage == "noSavedDeviceName" || Props.BluetoothReducer.subscription == false && Props.NavReducer.shouldRedirect == true){
+
     }
     else {
-      // dispatch(NavigationActions.navigate({
-      //   routeName: 'TabNav'
-      // }))
+
     }
   }
 
@@ -83,7 +80,8 @@ const Splash = ({ Props, dispatch, navigation}) => {
         onPress={() => {
           dispatch(NavigationActions.navigate({
             routeName: 'TabNav',
-            action: NavigationActions.navigate({ routeName: 'bluetooth'})
+            action: NavigationActions.navigate({ routeName: 'bluetooth'}),
+            redirectKey: true
           }))
         }}
 
@@ -98,6 +96,10 @@ Splash.propTypes = {
 };
 Splash.navigationOptions = {
   header: null
+}
+
+Splash.componentWillmount = ()=>{
+  console.log("component will mount");
 }
 
 const mapStateToProps = state => ({

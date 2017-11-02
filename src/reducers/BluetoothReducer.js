@@ -21,7 +21,6 @@ import { BleManager } from 'react-native-ble-plx';
         manager: manager,
         subscription: bluetoothSubscription,
         deviceNameFromStorage: null,
-        shouldRedirect: true,
       }
 
   function BluetoothReducer(state= bluetooth, action) {
@@ -37,9 +36,6 @@ import { BleManager } from 'react-native-ble-plx';
         return { ...state };
       case 'Save Device Name From Storage':
         state.deviceNameFromStorage = action.deviceName
-        return { ...state };
-      case 'Only Redirect Once':
-        state.shouldRedirect = false;
         return { ...state };
       default:
         return state;

@@ -11,7 +11,7 @@ const tempNavState = AppNavigator.router.getStateForAction(firstAction);
 
 function NavReducer(state = tempNavState, action) {
   let nextState;
-  state.myExtraBoop = "extra boop"
+  state.shouldRedirect = true;
   switch (action.type) {
     case 'Custom Action':
       nextState = Object.assign({}, state, {
@@ -25,10 +25,15 @@ function NavReducer(state = tempNavState, action) {
       );
       break;
     default:
-    console.log("nav reducer default");
-    console.log(state);
-    console.log(action);
+    console.log("nav reducer default - next state");
+    // console.log(state);
+    // console.log(action.redirectKey);
       nextState = AppNavigator.router.getStateForAction(action, state);
+      console.log(nextState);
+      if(action.redirectKey == true){
+        console.log("should redirect becomes false to stop loop");
+        nextState.shouldRedirect = false;
+      }
       break;
   }
   return nextState || state;

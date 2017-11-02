@@ -25,9 +25,3 @@ export const saveDeviceNameFROMStorage = (deviceName) => {
     deviceName
   }
 }
-
-export const onlyRedirectOnce = () => {
-  return {
-    tpye: 'Only Redirect Once'
-  }
-}
