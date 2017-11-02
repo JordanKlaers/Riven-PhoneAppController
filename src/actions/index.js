@@ -19,9 +19,15 @@ export const saveBluetoothState = (state) => {
 }
 
 export const saveDeviceNameFROMStorage = (deviceName) => {
-  
+
   return {
     type: 'Save Device Name From Storage',
     deviceName
+  }
+}
+
+export const onlyRedirectOnce = () => {
+  return {
+    tpye: 'Only Redirect Once'
   }
 }

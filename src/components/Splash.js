@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NavigationActions } from 'react-navigation';
-import { saveConnectionData, saveBluetoothState, saveDeviceNameFROMStorage } from '../actions'
+import { saveConnectionData, saveBluetoothState, saveDeviceNameFROMStorage, onlyRedirectOnce } from '../actions'
 import { AsyncStorage } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -18,8 +18,19 @@ const styles = StyleSheet.create({
 
 const Splash = ({ Props, dispatch, navigation}) => {
 
-  console.log(Props.BluetoothReducer.deviceNameFromStorage);
-  console.log(Props.BluetoothReducer.subscription);
+  // if(Props.BluetoothReducer.deviceNameFromStorage != null && Props.BluetoothReducer.subscription != null){
+  //   if ( Props.BluetoothReducer.deviceNameFromStorage == "noSavedDeviceName" || Props.BluetoothReducer.subscription == false && Props.BluetoothReducer.shouldRedirect == true){
+  //
+  //   }
+  //   else {
+  //     // dispatch(NavigationActions.navigate({
+  //     //   routeName: 'TabNav'
+  //     // }))
+  //   }
+  // }
+
+
+
 
   var bluetoothState = Props.BluetoothReducer.subscription
 
@@ -31,7 +42,7 @@ const Splash = ({ Props, dispatch, navigation}) => {
         }
       }
       else {
-        console.log("PoweredOff");
+        // console.log("PoweredOff");
         if(bluetoothState == true || bluetoothState == null){
           bluetoothState = false;
           dispatch(saveBluetoothState(bluetoothState))
