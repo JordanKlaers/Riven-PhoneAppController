@@ -24,16 +24,18 @@ function NavReducer(state = tempNavState, action) {
         state
       );
       break;
+    case 'Redirect For Bluetooth Connection':
+      console.log("gett redirected for bluetooth connection");
+      break;
+
     default:
-    console.log("nav reducer default - next state");
     // console.log(state);
     // console.log(action.redirectKey);
       nextState = AppNavigator.router.getStateForAction(action, state);
-      console.log(nextState);
-      if(action.redirectKey == true){
-        console.log("should redirect becomes false to stop loop");
-        nextState.shouldRedirect = false;
-      }
+        if(action.redirectKey == true){
+          console.log("should redirect becomes false to stop loop");
+          nextState.shouldRedirect = false;
+        }
       break;
   }
   return nextState || state;

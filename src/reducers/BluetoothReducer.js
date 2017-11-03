@@ -19,7 +19,7 @@ import { BleManager } from 'react-native-ble-plx';
       var bluetoothSubscription = null;
       var bluetooth = {
         manager: manager,
-        subscription: bluetoothSubscription,
+        bluetoothON_OFF: bluetoothSubscription,
         deviceNameFromStorage: null,
       }
 
@@ -32,12 +32,14 @@ import { BleManager } from 'react-native-ble-plx';
           return { ...state, ...action.deviceName };
         })
       case 'Save Bluetooth State':
-          state.subscription = action.state
+      console.log("bluetoothstate getting saved");
+          state.bluetoothON_OFF = action.state
         return { ...state };
       case 'Save Device Name From Storage':
         state.deviceNameFromStorage = action.deviceName
         return { ...state };
       default:
+      console.log("was this also hit");
         return state;
      }
   }

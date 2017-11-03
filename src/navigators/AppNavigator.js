@@ -8,7 +8,7 @@ import Controller from '../components/Controller'
 
 
 const TabNav = TabNavigator({
-    Controller : {
+    controller : {
       screen: Controller
     },
     bluetooth: {
