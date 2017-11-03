@@ -23,13 +23,14 @@ const styles = StyleSheet.create({
 
 const Bluetooth = ({ Props, dispatch, navigation}) => {
 
-var text= "placeholder"
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
-        Profile Screen
+        Bluetooth Settings
       </Text>
-      <Button onPress={()=> dispatch(customAction())} title="execute custom action" />
+      <Text>
+        Save device name for auto connection
+      </Text>
       <TextInput
        style={{height: 40, width: 200, borderColor: 'gray', borderWidth: 1}}
        onChangeText={async (value) => {
@@ -44,19 +45,10 @@ var text= "placeholder"
   )
 };
 
-Bluetooth.propTypes = {
-  dispatch: PropTypes.func.isRequired,
-};
-
 Bluetooth.navigationOptions = {
   title: 'Bluetooth',
   header: null
 };
-
-const navigationOptions = {
-    tabBarLabel: 'TestTabNav',
-    header: null
-  }
 
 const mapStateToProps = state => ({
   Props: state,

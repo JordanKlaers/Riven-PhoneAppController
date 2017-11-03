@@ -3,7 +3,15 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { NavigationActions } from 'react-navigation';
-import { saveConnectionData, saveBluetoothState, saveDeviceNameFROMStorage, onlyRedirectOnce, redirectForBluetoothConnection } from '../actions'
+import {
+  saveConnectionData,
+  saveBluetoothState,
+  saveDeviceNameFROMStorage,
+  onlyRedirectOnce,
+  redirectForBluetoothConnection,
+  scanInProgress,
+  connected
+} from '../actions'
 import { AsyncStorage } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -19,6 +27,7 @@ class Splash extends Component {
 
   constructor(props) {
     super(props)
+    this.state = { status: 'bruh' } ;
     this.manager = this.props.bluetooth.manager;
     this.currentBluetoothState = this.props.bluetooth.subscription;
     this.dispatch = this.props.dispatch;
@@ -64,9 +73,29 @@ class Splash extends Component {
   componentDidMount(){
 
   }
+
+  canIUseNextState = {}
+
   componentWillReceiveProps(nextState){
-    console.log("this will be next state");
     console.log(nextState);
+    if(nextState.bluetooth.scanAndConnect == true && nextState.shouldRedirect == true){
+      setTimeout(()=>{
+        this.dispatch(NavigationActions.navigate({
+          routeName: 'TabNav',
+          action: NavigationActions.navigate({ routeName: 'controller'}),
+          redirectKey: true
+        }))
+      },2000);
+    }
+    if(nextState.bluetooth.scanAndConnect == false){
+      this.setState({status: "Engaging main thrusters"})
+    }
+    if(nextState.bluetooth.scanAndConnect == "In Progress"){
+      this.setState({status: "Calibrating quantum fluxuations"})
+    }
+    if(nextState.bluetooth.scanAndConnect == true){
+      this.setState({status: "Initiating warp drive"})
+    }
     if(nextState.bluetooth.deviceNameFromStorage != null && nextState.bluetooth.bluetoothON_OFF != null){
       if ( nextState.bluetooth.deviceNameFromStorage == "noSavedDeviceName" || nextState.bluetooth.bluetoothON_OFF == false && nextState.shouldRedirect == true){
         console.log("redirect for bluetooth");
@@ -77,18 +106,21 @@ class Splash extends Component {
         }))},5000);
       }
       else if (nextState.bluetooth.deviceNameFromStorage != "noSavedDeviceName" && nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
-        console.log("time to scan and connect");
         var deviceConnectionInfo = {}
-        console.log(nextState.bluetooth.manager);
-        nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
-          console.log("scanning");
-          if (error) {
-            console.log(error);
-            return
-          }
-          if (device.name === nextState.bluetooth.deviceNameFromStorage) {  //should be 'raspberrypi'
-            nextState.bluetooth.manager.stopDeviceScan();
-            nextState.bluetooth.manager.connectToDevice(device.id)
+        if(nextState.bluetooth.scanAndConnect == false){
+            nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
+              console.log("scanning");
+              console.log(nextState.bluetooth.scanAndConnect);
+              if(nextState.bluetooth.scanAndConnect != "In Progress"){
+                nextState.dispatch(scanInProgress(nextState))
+              }
+              if (error) {
+                console.log(error);
+                return
+              }
+              if (device.name === nextState.bluetooth.deviceNameFromStorage) {  //should be 'raspberrypi'
+              nextState.bluetooth.manager.stopDeviceScan();
+              nextState.bluetooth.manager.connectToDevice(device.id)
               .then((device) => {
                 deviceConnectionInfo.device = device;
                 return device.discoverAllServicesAndCharacteristics();
@@ -109,7 +141,8 @@ class Splash extends Component {
                 console.log(error);
               });
             }
-        });
+          });
+        }
 
       }
       else if (nextState.shouldRedirect == true){
@@ -132,10 +165,11 @@ class Splash extends Component {
     header: null
   }
 
+
   render() {
     return (
       <View>
-        <Text>Hello world!</Text>
+        <Text style={{margin: '40%'}}>{this.state.status}</Text>
         <Button onPress={()=>{this.dispatch(NavigationActions.navigate({
           routeName: 'TabNav',
           action: NavigationActions.navigate({ routeName: 'bluetooth'}),
