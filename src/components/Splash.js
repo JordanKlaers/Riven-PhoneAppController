@@ -74,11 +74,13 @@ class Splash extends Component {
 
   }
 
-  canIUseNextState = {}
-
   componentWillReceiveProps(nextState){
-    console.log(nextState);
+    console.log("getting props for splash page again");
+    if(!nextState.shouldRedirect){
+      return
+    }
     if(nextState.bluetooth.scanAndConnect == true && nextState.shouldRedirect == true){
+      console.log("connected to device and havent redirected yet");
       setTimeout(()=>{
         this.dispatch(NavigationActions.navigate({
           routeName: 'TabNav',
@@ -97,19 +99,18 @@ class Splash extends Component {
       this.setState({status: "Initiating warp drive"})
     }
     if(nextState.bluetooth.deviceNameFromStorage != null && nextState.bluetooth.bluetoothON_OFF != null){
+      console.log("there is a stored device name and bluetoothON_OFF != null");
       if ( nextState.bluetooth.deviceNameFromStorage == "noSavedDeviceName" || nextState.bluetooth.bluetoothON_OFF == false && nextState.shouldRedirect == true){
-        console.log("redirect for bluetooth");
         setTimeout(()=>{this.dispatch(NavigationActions.navigate({
           routeName: 'TabNav',
           action: NavigationActions.navigate({ routeName: 'bluetooth'}),
           redirectKey: true
         }))},5000);
       }
-      else if (nextState.bluetooth.deviceNameFromStorage != "noSavedDeviceName" && nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
+      else if (nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
         var deviceConnectionInfo = {}
         if(nextState.bluetooth.scanAndConnect == false){
             nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
-              console.log("scanning");
               console.log(nextState.bluetooth.scanAndConnect);
               if(nextState.bluetooth.scanAndConnect != "In Progress"){
                 nextState.dispatch(scanInProgress(nextState))

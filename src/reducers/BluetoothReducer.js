@@ -34,8 +34,7 @@ import { BleManager } from 'react-native-ble-plx';
           return { ...state, ...action.deviceName };
         })
       case 'Save Bluetooth State':
-      console.log("bluetoothstate getting saved");
-          state.bluetoothON_OFF = action.state
+        state.bluetoothON_OFF = action.state
         return { ...state };
       case 'Save Device Name From Storage':
         state.deviceNameFromStorage = action.deviceName

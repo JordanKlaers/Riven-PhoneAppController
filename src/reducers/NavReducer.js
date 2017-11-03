@@ -29,8 +29,8 @@ function NavReducer(state = tempNavState, action) {
       break;
 
     default:
-    // console.log(state);
-    // console.log(action.redirectKey);
+    console.log("nav reducer");
+    console.log(action);
       nextState = AppNavigator.router.getStateForAction(action, state);
         if(action.redirectKey == true){
           console.log("should redirect becomes false to stop loop");
