@@ -44,10 +44,13 @@ import { BleManager } from 'react-native-ble-plx';
         state.scanAndConnect = "In Progress"
         return { ...state };
       case 'Redirect Is Triggered':
+      console.log(state.shouldRedirect);
         console.log("bluetooth redirect triggered?");
-        return Object.assign({}, state, {
-          shouldRedirect: false
+        var result = Object.assign({}, state, {
+          shouldRedirect: "donkey"
         });
+        console.log(result.shouldRedirect);
+        return result
         break;
       default:
         state.FROMBLUETOOTh = "FROM BLUETOOTHER"
