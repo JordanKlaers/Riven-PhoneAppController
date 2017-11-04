@@ -10,7 +10,8 @@ import {
   onlyRedirectOnce,
   redirectForBluetoothConnection,
   scanInProgress,
-  connected
+  connected,
+  triggered
 } from '../actions'
 import { AsyncStorage } from 'react-native';
 
@@ -39,12 +40,14 @@ class Splash extends Component {
       if (state === 'PoweredOn') {
         if(this.currentBluetoothState == false || this.currentBluetoothState == null){
           this.currentBluetoothState = true;
+          console.log("updating bluetooth state");
           this.dispatch(saveBluetoothState(this.currentBluetoothState))
         }
       }
       else {
         if(this.currentBluetoothState == true || this.currentBluetoothState == null){
           this.currentBluetoothState = false;
+          console.log("updating bluetooth state");
           this.dispatch(saveBluetoothState(this.currentBluetoothState))
         }
       }
@@ -65,100 +68,206 @@ class Splash extends Component {
       }
       // return value
       }).catch((err)=>{
-        console.log("no device name");
-        console.log(err);
+
       })
 
   }
-  componentDidMount(){
+  componentDidUpdate(nextState){
+    // console.log("huh?----");
+    // console.log(nextState.myNav);
+    // if (nextState.myNav.shouldRedirect) {
+    //   // setTimeout(()=>{
+    //   //     console.log("AUTO REDIRECT");
+    //   //
+    //   //       )},5000);
+    //   console.log("-->nav");
+    //   // this.dispatch(NavigationActions.navigate({
+    //   //   routeName: 'TabNav',
+    //   //   action: NavigationActions.navigate({ routeName: 'bluetooth'}),
+    //   //   redirectKey: true
+    //   // }))
+    //   // console.log("-->triggered");
+    //   // this.dispatch(triggered())
+    // }
 
+
+    // if(!nextState.shouldRedirect){
+    //   console.log("if I see this - we have already redirected");
+    // }
+    // if(nextState.bluetooth.scanAndConnect == true && nextState.shouldRedirect == true){
+    //   setTimeout(()=>{
+    //     console.log("connected and abuot to auto nav to controller");
+    //     this.dispatch(NavigationActions.navigate({
+    //       routeName: 'TabNav',
+    //       action: NavigationActions.navigate({ routeName: 'controller'}),
+    //       redirectKey: true
+    //     }))
+    //   },2000);
+    // }
+    // // if(nextState.bluetooth.scanAndConnect == false){
+    // //   this.setState({status: "Engaging main thrusters"})
+    // // }
+    // // if(nextState.bluetooth.scanAndConnect == "In Progress"){
+    // //   this.setState({status: "Calibrating quantum fluxuations"})
+    // // }
+    // // if(nextState.bluetooth.scanAndConnect == true){
+    // //   this.setState({status: "Initiating warp drive"})
+    // // }
+    // if(nextState.bluetooth.deviceNameFromStorage != null && nextState.bluetooth.bluetoothON_OFF != null){
+    //
+    //   if ( nextState.bluetooth.deviceNameFromStorage == "noSavedDeviceName" || nextState.bluetooth.bluetoothON_OFF == false && nextState.shouldRedirect == true){
+    //     setTimeout(()=>{
+    //       console.log("no deviceNameFromStorage or bluetooth is off and we havent redirected yet so now we ganna");
+    //       console.log(nextState.shouldRedirect);
+    //       this.dispatch(NavigationActions.navigate({
+    //       routeName: 'TabNav',
+    //       action: NavigationActions.navigate({ routeName: 'bluetooth'}),
+    //       redirectKey: true
+    //     }))},5000);
+    //   }
+    //   else if (nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
+    //     var deviceConnectionInfo = {}
+    //     if(nextState.bluetooth.scanAndConnect == false){
+    //         nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
+    //
+    //           if(nextState.bluetooth.scanAndConnect != "In Progress"){
+    //             nextState.dispatch(scanInProgress(nextState))
+    //           }
+    //           if (error) {
+    //
+    //             return
+    //           }
+    //           if (device.name === nextState.bluetooth.deviceNameFromStorage) {  //should be 'raspberrypi'
+    //           nextState.bluetooth.manager.stopDeviceScan();
+    //           nextState.bluetooth.manager.connectToDevice(device.id)
+    //           .then((device) => {
+    //             deviceConnectionInfo.device = device;
+    //             return device.discoverAllServicesAndCharacteristics();
+    //           })
+    //           .then((device) => {
+    //             deviceConnectionInfo.deviceID = device.id
+    //             return nextState.bluetooth.manager.servicesForDevice(device.id)
+    //           })
+    //           .then((services) => {
+    //             deviceConnectionInfo.writeServiceUUID = services[2].uuid
+    //             return nextState.bluetooth.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+    //           })
+    //           .then((characteristic)=> {
+    //
+    //             deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+    //             nextState.dispatch(saveConnectionData(deviceConnectionInfo))
+    //           }, (error) => {
+    //
+    //           });
+    //         }
+    //       });
+    //     }
+    //
+    //   }
+    //   else if (nextState.shouldRedirect == true){
+    //
+    //     //TODO try to connect
+    //
+    //
+    //     // setTimeout(()=>{this.dispatch(NavigationActions.navigate({
+    //     //   routeName: 'TabNav',
+    //     //   action: NavigationActions.navigate({ routeName: 'controller'}),
+    //     //   redirectKey: true
+    //     // }))},5000);
+    //   }
+    // }
   }
 
-  componentWillReceiveProps(nextState){
-    console.log("getting props for splash page again");
-    if(!nextState.shouldRedirect){
-      return
-    }
-    if(nextState.bluetooth.scanAndConnect == true && nextState.shouldRedirect == true){
-      console.log("connected to device and havent redirected yet");
-      setTimeout(()=>{
-        this.dispatch(NavigationActions.navigate({
-          routeName: 'TabNav',
-          action: NavigationActions.navigate({ routeName: 'controller'}),
-          redirectKey: true
-        }))
-      },2000);
-    }
-    if(nextState.bluetooth.scanAndConnect == false){
-      this.setState({status: "Engaging main thrusters"})
-    }
-    if(nextState.bluetooth.scanAndConnect == "In Progress"){
-      this.setState({status: "Calibrating quantum fluxuations"})
-    }
-    if(nextState.bluetooth.scanAndConnect == true){
-      this.setState({status: "Initiating warp drive"})
-    }
-    if(nextState.bluetooth.deviceNameFromStorage != null && nextState.bluetooth.bluetoothON_OFF != null){
-      console.log("there is a stored device name and bluetoothON_OFF != null");
-      if ( nextState.bluetooth.deviceNameFromStorage == "noSavedDeviceName" || nextState.bluetooth.bluetoothON_OFF == false && nextState.shouldRedirect == true){
-        setTimeout(()=>{this.dispatch(NavigationActions.navigate({
-          routeName: 'TabNav',
-          action: NavigationActions.navigate({ routeName: 'bluetooth'}),
-          redirectKey: true
-        }))},5000);
-      }
-      else if (nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
-        var deviceConnectionInfo = {}
-        if(nextState.bluetooth.scanAndConnect == false){
-            nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
-              console.log(nextState.bluetooth.scanAndConnect);
-              if(nextState.bluetooth.scanAndConnect != "In Progress"){
-                nextState.dispatch(scanInProgress(nextState))
-              }
-              if (error) {
-                console.log(error);
-                return
-              }
-              if (device.name === nextState.bluetooth.deviceNameFromStorage) {  //should be 'raspberrypi'
-              nextState.bluetooth.manager.stopDeviceScan();
-              nextState.bluetooth.manager.connectToDevice(device.id)
-              .then((device) => {
-                deviceConnectionInfo.device = device;
-                return device.discoverAllServicesAndCharacteristics();
-              })
-              .then((device) => {
-                deviceConnectionInfo.deviceID = device.id
-                return nextState.bluetooth.manager.servicesForDevice(device.id)
-              })
-              .then((services) => {
-                deviceConnectionInfo.writeServiceUUID = services[2].uuid
-                return nextState.bluetooth.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-              })
-              .then((characteristic)=> {
-                console.log("connected");
-                deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-                nextState.dispatch(saveConnectionData(deviceConnectionInfo))
-              }, (error) => {
-                console.log(error);
-              });
-            }
-          });
-        }
-
-      }
-      else if (nextState.shouldRedirect == true){
-        console.log("redirect for the good stuff");
-        //TODO try to connect
 
 
-        // setTimeout(()=>{this.dispatch(NavigationActions.navigate({
-        //   routeName: 'TabNav',
-        //   action: NavigationActions.navigate({ routeName: 'controller'}),
-        //   redirectKey: true
-        // }))},5000);
-      }
-    }
-  }
+  // componentWillReceiveProps(nextState){
+  //   // console.log(nextState);
+  //   if(!nextState.shouldRedirect){
+  //     console.log("if I see this - we have already redirected");
+  //   }
+  //   if(nextState.bluetooth.scanAndConnect == true && nextState.shouldRedirect == true){
+  //     setTimeout(()=>{
+  //       console.log("connected and abuot to auto nav to controller");
+  //       this.dispatch(NavigationActions.navigate({
+  //         routeName: 'TabNav',
+  //         action: NavigationActions.navigate({ routeName: 'controller'}),
+  //         redirectKey: true
+  //       }))
+  //     },2000);
+  //   }
+  //   if(nextState.bluetooth.scanAndConnect == false){
+  //     this.setState({status: "Engaging main thrusters"})
+  //   }
+  //   if(nextState.bluetooth.scanAndConnect == "In Progress"){
+  //     this.setState({status: "Calibrating quantum fluxuations"})
+  //   }
+  //   if(nextState.bluetooth.scanAndConnect == true){
+  //     this.setState({status: "Initiating warp drive"})
+  //   }
+  //   if(nextState.bluetooth.deviceNameFromStorage != null && nextState.bluetooth.bluetoothON_OFF != null){
+  //
+  //     if ( nextState.bluetooth.deviceNameFromStorage == "noSavedDeviceName" || nextState.bluetooth.bluetoothON_OFF == false && nextState.shouldRedirect == true){
+  //       setTimeout(()=>{
+  //         console.log("no deviceNameFromStorage or bluetooth is off and we havent redirected yet so now we ganna");
+  //         console.log(nextState.shouldRedirect);
+  //         this.dispatch(NavigationActions.navigate({
+  //         routeName: 'TabNav',
+  //         action: NavigationActions.navigate({ routeName: 'bluetooth'}),
+  //         redirectKey: true
+  //       }))},5000);
+  //     }
+  //     else if (nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
+  //       var deviceConnectionInfo = {}
+  //       if(nextState.bluetooth.scanAndConnect == false){
+  //           nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
+  //
+  //             if(nextState.bluetooth.scanAndConnect != "In Progress"){
+  //               nextState.dispatch(scanInProgress(nextState))
+  //             }
+  //             if (error) {
+  //
+  //               return
+  //             }
+  //             if (device.name === nextState.bluetooth.deviceNameFromStorage) {  //should be 'raspberrypi'
+  //             nextState.bluetooth.manager.stopDeviceScan();
+  //             nextState.bluetooth.manager.connectToDevice(device.id)
+  //             .then((device) => {
+  //               deviceConnectionInfo.device = device;
+  //               return device.discoverAllServicesAndCharacteristics();
+  //             })
+  //             .then((device) => {
+  //               deviceConnectionInfo.deviceID = device.id
+  //               return nextState.bluetooth.manager.servicesForDevice(device.id)
+  //             })
+  //             .then((services) => {
+  //               deviceConnectionInfo.writeServiceUUID = services[2].uuid
+  //               return nextState.bluetooth.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+  //             })
+  //             .then((characteristic)=> {
+  //
+  //               deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+  //               nextState.dispatch(saveConnectionData(deviceConnectionInfo))
+  //             }, (error) => {
+  //
+  //             });
+  //           }
+  //         });
+  //       }
+  //
+  //     }
+  //     else if (nextState.shouldRedirect == true){
+  //
+  //       //TODO try to connect
+  //
+  //
+  //       // setTimeout(()=>{this.dispatch(NavigationActions.navigate({
+  //       //   routeName: 'TabNav',
+  //       //   action: NavigationActions.navigate({ routeName: 'controller'}),
+  //       //   redirectKey: true
+  //       // }))},5000);
+  //     }
+  //   }
+  // }
 
 
 
@@ -189,7 +298,7 @@ Splash.navigationOptions = {
 }
 
 const mapStateToProps = state => ({
-  shouldRedirect: state.NavReducer.shouldRedirect,
+  myNav: state.NavReducer,
   bluetooth: state.BluetoothReducer
 });
 
@@ -213,15 +322,15 @@ export default connect(mapStateToProps)(Splash);
 //   if (value !== null){
 //   }
 // }).catch((error) => {
-//   console.log("error with storage");
+
 // })
 //
 // var manager = Props.nav.manager
 // var tempState = {};
 // const subscription = manager.onStateChange((state) => {
 //       if (state === 'PoweredOn') {
-//         // console.log("PoweredOn");
-//         // console.log(myProps);
+
+
 //           scanAndConnect();
 //           // subscription.remove();
 //       }
@@ -259,7 +368,7 @@ export default connect(mapStateToProps)(Splash);
 //                 tempState.writeCharacteristicUUID = characteristic[0].uuid
 //                 dispatch(saveConnectionData(tempState))
 //               }, (error) => {
-//                 console.log(error);
+
 //               });
 //       }
 //   });

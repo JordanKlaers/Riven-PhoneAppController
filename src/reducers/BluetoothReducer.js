@@ -43,7 +43,7 @@ import { BleManager } from 'react-native-ble-plx';
         state.scanAndConnect = "In Progress"
         return { ...state };
       default:
-      console.log("was this also hit");
+        state.FROMBLUETOOTh = "FROM BLUETOOTHER"
         return state;
      }
   }

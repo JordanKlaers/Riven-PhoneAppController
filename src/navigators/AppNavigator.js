@@ -24,7 +24,7 @@ const TabNav = TabNavigator({
 
 export const AppNavigator = StackNavigator({
   Splash: { screen: Splash },
-  TabNav : { screen: TabNav}
+  TabNav : { screen: TabNav},
 
 });
 

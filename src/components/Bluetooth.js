@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
 
 
 const Bluetooth = ({ Props, dispatch, navigation}) => {
-
+  // console.log(Props);
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>

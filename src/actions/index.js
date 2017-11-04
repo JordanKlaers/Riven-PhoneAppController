@@ -38,3 +38,9 @@ export const scanInProgress = (state) => {
     state
   }
 }
+
+export const triggered = () => {
+  return {
+    type: 'Redirect Is Triggered'
+  }
+}

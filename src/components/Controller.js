@@ -22,7 +22,6 @@ const styles = StyleSheet.create({
 
 
 const Controller = ({ Props, dispatch, navigation}) => {
-  console.log("controller sccreen loaded ------");
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>

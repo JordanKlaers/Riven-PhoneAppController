@@ -4,12 +4,12 @@ import { AppNavigator } from '../navigators/AppNavigator';
 
 
 
-const firstAction = AppNavigator.router.getActionForPathAndParams('Splash');
-const tempNavState = AppNavigator.router.getStateForAction(firstAction);
+const thisfirstAction = AppNavigator.router.getActionForPathAndParams('Splash');
+const thisOne = AppNavigator.router.getStateForAction(thisfirstAction);
 
 
+function NavReducer(state = thisOne, action) {
 
-function NavReducer(state = tempNavState, action) {
   let nextState;
   state.shouldRedirect = true;
   switch (action.type) {
@@ -24,18 +24,23 @@ function NavReducer(state = tempNavState, action) {
         state
       );
       break;
-    case 'Redirect For Bluetooth Connection':
-      console.log("gett redirected for bluetooth connection");
+    case 'Redirect Is Triggered':
+      console.log("what the heck why no triggered?");
+      nextState = AppNavigator.router.getStateForAction(action, state);
+      nextState.shouldRedirect = false;
       break;
 
     default:
-    console.log("nav reducer");
-    console.log(action);
+    // console.log("does old state show shouldRedirect as false");
+    // // console.log(action);
+    // console.log(state);
       nextState = AppNavigator.router.getStateForAction(action, state);
-        if(action.redirectKey == true){
-          console.log("should redirect becomes false to stop loop");
-          nextState.shouldRedirect = false;
-        }
+      nextState.FROMNAv = "FROM NAV"
+      //   if(action.redirectKey == true){
+      //     // console.log("onlyRedirectOnce----------");
+      //     // console.log(state);
+      //     nextState.shouldRedirect = false;
+      //   }
       break;
   }
   return nextState || state;
