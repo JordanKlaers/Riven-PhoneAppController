@@ -22,6 +22,7 @@ import { BleManager } from 'react-native-ble-plx';
         bluetoothON_OFF: bluetoothSubscription,
         deviceNameFromStorage: null,
         scanAndConnect: false,         //false in progress or true for connected
+        shouldRedirect: true
       }
 
   function BluetoothReducer(state= bluetooth, action) {
@@ -42,6 +43,12 @@ import { BleManager } from 'react-native-ble-plx';
       case 'Scan In Progress':
         state.scanAndConnect = "In Progress"
         return { ...state };
+      case 'Redirect Is Triggered':
+        console.log("bluetooth redirect triggered?");
+        return Object.assign({}, state, {
+          shouldRedirect: false
+        });
+        break;
       default:
         state.FROMBLUETOOTh = "FROM BLUETOOTHER"
         return state;
