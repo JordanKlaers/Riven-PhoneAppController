@@ -21,7 +21,7 @@ import { BleManager } from 'react-native-ble-plx';
         manager: manager,
         bluetoothON_OFF: bluetoothSubscription,
         deviceNameFromStorage: null,
-        scanAndConnect: false,         //false in progress or true for connected
+        connectedToDevice: false,         //false in progress or true for connected
         shouldRedirect: true
       }
 
@@ -41,15 +41,13 @@ import { BleManager } from 'react-native-ble-plx';
         state.deviceNameFromStorage = action.deviceName
         return { ...state };
       case 'Scan In Progress':
-        state.scanAndConnect = "In Progress"
+        state.connectedToDevice = "In Progress"
         return { ...state };
       case 'Redirect Is Triggered':
-      console.log(state.shouldRedirect);
         console.log("bluetooth redirect triggered?");
         var result = Object.assign({}, state, {
-          shouldRedirect: "donkey"
+          shouldRedirect: false
         });
-        console.log(result.shouldRedirect);
         return result
         break;
       default:

@@ -73,24 +73,93 @@ class Splash extends Component {
       })
 
   }
-  componentDidUpdate(nextState){
+  componentDidUpdate(state){
 
     console.log("huh?----");
-    console.log(nextState.bluetooth.shouldRedirect);
-    console.log(this.state);
+    var redirectBool = this.state.localRedirectBool
+    var connectedToDevice = state.bluetooth.connectedToDevice
+    var deviceName = state.bluetooth.deviceNameFromStorage
+    var bluetoothON_OFF = state.bluetooth.bluetoothON_OFF
+    var manager = state.bluetooth.manager
 
+
+    console.log(redirectBool);
+    if(redirectBool){ //are we still on splash page
+      if(connectedToDevice){  //are we connected to the device
+        setTimeout(()=>{
+          {this.dispatch({
+            type: 'Redirect Is Triggered',
+            action: this.dispatch(NavigationActions.navigate({
+              routeName: 'controller'
+            }))
+          })}
+        },2000);
+      }
+      else {
+        if(deviceName != null && bluetoothON_OFF != null && deviceName !=  "noSavedDeviceName" && bluetoothON_OFF != false){ // if we have a device name and bluetooth is on try to connect
+          this.tryToConnect(deviceName, connectedToDevice, manager)
+        }
+        else {
+          setTimeout(()=>{
+            {this.dispatch({
+              type: 'Redirect Is Triggered',
+              action: this.dispatch(NavigationActions.navigate({
+                routeName: 'bluetooth'
+              }))
+            })}
+          },2000);
+        }
+
+      }
+    }
+    else {
+      // console.log("if I see this - we have already redirected but splash is getting updated");
+    }
 
   }
 
   componentWillReceiveProps(nextState){
-    console.log("NEXT STATE");
-    console.log(nextState.bluetooth.shouldRedirect);
     if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
       this.state.localRedirectBool = nextState.bluetooth.shouldRedirect
       console.log("GOT CHANGED YO");
       this.setState({localRedirectBool: nextState.bluetooth.shouldRedirect})
     }
+  }
 
+
+  tryToConnect = (deviceName, connectedToDevice, manager)=>{
+    var deviceConnectionInfo = {};
+    manager.startDeviceScan(null, null, (error, device) => {
+      if(connectedToDevice != "In Progress"){
+        this.dispatch(scanInProgress(nextState))
+      }
+      if (error) {
+        return
+      }
+      if (deviceName === this.deviceNameFromStorage) {  //should be 'raspberrypi'
+        manager.stopDeviceScan();
+        manager.connectToDevice(device.id)
+        .then((device) => {
+          deviceConnectionInfo.device = device;
+          return device.discoverAllServicesAndCharacteristics();
+        })
+        .then((device) => {
+          deviceConnectionInfo.deviceID = device.id
+          return manager.servicesForDevice(device.id)
+        })
+        .then((services) => {
+          deviceConnectionInfo.writeServiceUUID = services[2].uuid
+          return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+        })
+        .then((characteristic)=> {
+          deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+          this.dispatch(saveConnectionData(deviceConnectionInfo))
+        },
+        (error) => {
+
+        });
+      }
+    });
   }
 
   // componentWillReceiveProps(nextState){
@@ -132,39 +201,7 @@ class Splash extends Component {
   //     else if (nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
   //       var deviceConnectionInfo = {}
   //       if(nextState.bluetooth.scanAndConnect == false){
-  //           nextState.bluetooth.manager.startDeviceScan(null, null, (error, device) => {
-  //
-  //             if(nextState.bluetooth.scanAndConnect != "In Progress"){
-  //               nextState.dispatch(scanInProgress(nextState))
-  //             }
-  //             if (error) {
-  //
-  //               return
-  //             }
-  //             if (device.name === nextState.bluetooth.deviceNameFromStorage) {  //should be 'raspberrypi'
-  //             nextState.bluetooth.manager.stopDeviceScan();
-  //             nextState.bluetooth.manager.connectToDevice(device.id)
-  //             .then((device) => {
-  //               deviceConnectionInfo.device = device;
-  //               return device.discoverAllServicesAndCharacteristics();
-  //             })
-  //             .then((device) => {
-  //               deviceConnectionInfo.deviceID = device.id
-  //               return nextState.bluetooth.manager.servicesForDevice(device.id)
-  //             })
-  //             .then((services) => {
-  //               deviceConnectionInfo.writeServiceUUID = services[2].uuid
-  //               return nextState.bluetooth.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-  //             })
-  //             .then((characteristic)=> {
-  //
-  //               deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-  //               nextState.dispatch(saveConnectionData(deviceConnectionInfo))
-  //             }, (error) => {
-  //
-  //             });
-  //           }
-  //         });
+
   //       }
   //
   //     }
@@ -196,27 +233,19 @@ class Splash extends Component {
     return (
       <View>
         <Text style={{margin: '40%'}}>{this.state.status}</Text>
-        <Button onPress={()=>{this.magicalFunction()}
-        } title="dispatch button"  />
+        <Button onPress={()=>{
+          {this.dispatch({
+            type: 'Redirect Is Triggered',
+            action: this.dispatch(NavigationActions.navigate({
+              routeName: 'bluetooth'
+            }))
+          })}
+        }} title="dispatch button"  />
       </View>
     );
   }
 }
-// {this.dispatch(
-//   {
-//     type: 'Redirect Is Triggered',
-//     action: this.dispatch(NavigationActions.navigate({
-//       routeName: 'Splash',
-//       action: this.dispatch(NavigationActions.navigate({
-//         routeName: 'TabNav',
-//         action: NavigationActions.navigate({
-//           routeName: 'bluetooth'
-//         }),
-//       }))
-//     }))
-//
-//   }
-// )}
+
 
 Splash.propTypes = {
   dispatch: PropTypes.func.isRequired,
