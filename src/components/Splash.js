@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { NavigationActions, } from 'react-navigation';
 import {
   saveConnectionData,
@@ -35,12 +35,19 @@ class Splash extends Component {
       deviceName: this.props.bluetooth.deviceNameFromStorage || null,
       dispatch: this.props.navigation.dispatch,
       initiatedSetTimeout: false,
-      connectedToDevice: false
+      connectedToDevice: false,
+      dimensions: {}
     }
   }
 
+componentDidMount(){
+
+}
+
+
   componentWillMount(){
-    console.log("component Will Mount");
+    console.log("WTF");
+    console.log(Dimensions.get("window"));
     this.state.manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
         if(this.state.currentBluetoothState == false || this.state.currentBluetoothState == null){
@@ -83,15 +90,15 @@ class Splash extends Component {
 
     if(redirectBool){ //are we still on splash page
       if(connectedToDevice){  //are we connected to the device
-        console.log("on splash page and connected to the device");
+
 
         if(this.state.initiatedSetTimeout == false){
-          console.log("connected to device but have not initiated redirect");
+
           var tempState = Object.assign({}, this.state, {
             initiatedSetTimeout: true
           });
           this.setState(tempState, ()=>{
-            console.log("initiaed redirect");
+
             setTimeout(()=>{
               {this.state.dispatch({
                 type: 'Redirect Is Triggered',
@@ -114,12 +121,12 @@ class Splash extends Component {
         }
         else if((deviceName ==  "noSavedDeviceName" && bluetoothON_OFF != null) || (deviceName != null && bluetoothON_OFF == false)){
           if(this.state.initiatedSetTimeout == false){
-            console.log("locally initiate redirect for bluetooth tab");
+
             var tempState = Object.assign({}, this.state, {
               initiatedSetTimeout: true
             });
             this.setState(tempState, ()=>{
-              console.log("initiated redirect to bluetooth");
+
               setTimeout(()=>{
                 {this.state.dispatch({
                   type: 'Redirect Is Triggered',
@@ -131,9 +138,7 @@ class Splash extends Component {
 
             })
           }
-          // console.log(this.state);
-          // console.log("device name", deviceName);
-          // console.log("bluetoothON_OFF", bluetoothON_OFF);
+
 
         }
 
@@ -147,20 +152,20 @@ class Splash extends Component {
 
   componentWillReceiveProps(nextState){
     if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
-      console.log("locally updating that we have redirected");
+
       this.setState({localRedirectBool: nextState.bluetooth.shouldRedirect})
     }
-    // console.log(nextState);
+
     if(nextState.bluetooth.deviceNameFromStorage != this.state.deviceName){
-      console.log("device name dont match so updating");
-      // console.log(this.state.deviceName);
+
+
       var tempState = Object.assign({}, this.state, {
         deviceName: nextState.bluetooth.deviceNameFromStorage
       });
       this.setState(tempState)
     }
     if(nextState.bluetooth.bluetoothON_OFF != this.state.bluetoothON_OFF){
-      console.log("locally updating buetooth state");
+
       var tempState = Object.assign({}, this.state, {
         bluetoothON_OFF: nextState.bluetooth.bluetoothON_OFF
       });
@@ -168,7 +173,7 @@ class Splash extends Component {
     }
 
     if(nextState.bluetooth.connectedToDevice != this.state.connectedToDevice){
-      console.log("locally updating device connection status");
+
       var tempState = Object.assign({}, this.state, {
         connectedToDevice: nextState.bluetooth.connectedToDevice
       });
