@@ -28,28 +28,30 @@ class Splash extends Component {
 
   constructor(props) {
     super(props)
-    this.state = { localRedirectBool: true } ;
-    this.manager = this.props.bluetooth.manager;
-    this.currentBluetoothState = this.props.bluetooth.subscription;
-    this.dispatch = this.props.navigation.dispatch;
-    this.deviceNameFromStorage = this.props.bluetooth.deviceNameFromStorage
-    this.nav = this.props.navigation.navigate
+    this.state = {                      //should be just the ones that i need to worry about changing
+      localRedirectBool: true,
+      manager: this.props.bluetooth.manager,
+      currentBluetoothState: this.props.bluetooth.subscription || null,
+      deviceName: this.props.bluetooth.deviceNameFromStorage || null,
+      dispatch: this.props.navigation.dispatch,
+      initiatedSetTimeout: false,
+      connectedToDevice: false
+    }
   }
 
   componentWillMount(){
-    this.manager.onStateChange((state) => {
+    console.log("component Will Mount");
+    this.state.manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
-        if(this.currentBluetoothState == false || this.currentBluetoothState == null){
-          this.currentBluetoothState = true;
-          console.log("updating bluetooth state");
-          this.dispatch(saveBluetoothState(this.currentBluetoothState))
+        if(this.state.currentBluetoothState == false || this.state.currentBluetoothState == null){
+          this.state.currentBluetoothState = true;
+          this.state.dispatch(saveBluetoothState(this.state.currentBluetoothState))
         }
       }
       else {
-        if(this.currentBluetoothState == true || this.currentBluetoothState == null){
-          this.currentBluetoothState = false;
-          console.log("updating bluetooth state");
-          this.dispatch(saveBluetoothState(this.currentBluetoothState))
+        if(this.state.currentBluetoothState == true || this.state.currentBluetoothState == null){
+          this.state.currentBluetoothState = false;
+          this.state.dispatch(saveBluetoothState(this.state.currentBluetoothState))
         }
       }
     }, true);
@@ -57,57 +59,82 @@ class Splash extends Component {
     AsyncStorage.getAllKeys().then((value)=>{
       if(value.includes('savedDeviceName')){
         AsyncStorage.getItem("savedDeviceName").then((name)=>{
-          if(this.deviceNameFromStorage != name){
-            this.dispatch(saveDeviceNameFROMStorage(name))
+          if(this.state.deviceNameFromStorage != name){
+            this.state.dispatch(saveDeviceNameFROMStorage(name))
           }
         })
       }
       else{
         if(this.deviceNameFromStorage != "noSavedDeviceName"){
-          this.dispatch(saveDeviceNameFROMStorage("noSavedDeviceName"))
+          this.state.dispatch(saveDeviceNameFROMStorage({name:"noSavedDeviceName"}))
         }
       }
-      // return value
       }).catch((err)=>{
 
       })
-
   }
-  componentDidUpdate(state){
 
-    console.log("huh?----");
+  componentDidUpdate(state){
     var redirectBool = this.state.localRedirectBool
-    var connectedToDevice = state.bluetooth.connectedToDevice
-    var deviceName = state.bluetooth.deviceNameFromStorage
+    var connectedToDevice = this.state.connectedToDevice
+    var deviceName = this.state.deviceName
     var bluetoothON_OFF = state.bluetooth.bluetoothON_OFF
     var manager = state.bluetooth.manager
 
-
-    console.log(redirectBool);
     if(redirectBool){ //are we still on splash page
       if(connectedToDevice){  //are we connected to the device
-        setTimeout(()=>{
-          {this.dispatch({
-            type: 'Redirect Is Triggered',
-            action: this.dispatch(NavigationActions.navigate({
-              routeName: 'controller'
-            }))
-          })}
-        },2000);
+        console.log("on splash page and connected to the device");
+
+        if(this.state.initiatedSetTimeout == false){
+          console.log("connected to device but have not initiated redirect");
+          var tempState = Object.assign({}, this.state, {
+            initiatedSetTimeout: true
+          });
+          this.setState(tempState, ()=>{
+            console.log("initiaed redirect");
+            setTimeout(()=>{
+              {this.state.dispatch({
+                type: 'Redirect Is Triggered',
+                action: this.state.dispatch(NavigationActions.navigate({
+                  routeName: 'controller'
+                }))
+              })}
+            },2000);
+
+          })
+        }
+
+
+
+
       }
       else {
         if(deviceName != null && bluetoothON_OFF != null && deviceName !=  "noSavedDeviceName" && bluetoothON_OFF != false){ // if we have a device name and bluetooth is on try to connect
           this.tryToConnect(deviceName, connectedToDevice, manager)
         }
-        else {
-          setTimeout(()=>{
-            {this.dispatch({
-              type: 'Redirect Is Triggered',
-              action: this.dispatch(NavigationActions.navigate({
-                routeName: 'bluetooth'
-              }))
-            })}
-          },2000);
+        else if((deviceName ==  "noSavedDeviceName" && bluetoothON_OFF != null) || (deviceName != null && bluetoothON_OFF == false)){
+          if(this.state.initiatedSetTimeout == false){
+            console.log("locally initiate redirect for bluetooth tab");
+            var tempState = Object.assign({}, this.state, {
+              initiatedSetTimeout: true
+            });
+            this.setState(tempState, ()=>{
+              console.log("initiated redirect to bluetooth");
+              setTimeout(()=>{
+                {this.state.dispatch({
+                  type: 'Redirect Is Triggered',
+                  action: this.state.dispatch(NavigationActions.navigate({
+                    routeName: 'bluetooth'
+                  }))
+                })}
+              },2000);
+
+            })
+          }
+          // console.log(this.state);
+          // console.log("device name", deviceName);
+          // console.log("bluetoothON_OFF", bluetoothON_OFF);
+
         }
 
       }
@@ -120,10 +147,34 @@ class Splash extends Component {
 
   componentWillReceiveProps(nextState){
     if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
-      this.state.localRedirectBool = nextState.bluetooth.shouldRedirect
-      console.log("GOT CHANGED YO");
+      console.log("locally updating that we have redirected");
       this.setState({localRedirectBool: nextState.bluetooth.shouldRedirect})
     }
+    // console.log(nextState);
+    if(nextState.bluetooth.deviceNameFromStorage != this.state.deviceName){
+      console.log("device name dont match so updating");
+      // console.log(this.state.deviceName);
+      var tempState = Object.assign({}, this.state, {
+        deviceName: nextState.bluetooth.deviceNameFromStorage
+      });
+      this.setState(tempState)
+    }
+    if(nextState.bluetooth.bluetoothON_OFF != this.state.bluetoothON_OFF){
+      console.log("locally updating buetooth state");
+      var tempState = Object.assign({}, this.state, {
+        bluetoothON_OFF: nextState.bluetooth.bluetoothON_OFF
+      });
+      this.setState(tempState)
+    }
+
+    if(nextState.bluetooth.connectedToDevice != this.state.connectedToDevice){
+      console.log("locally updating device connection status");
+      var tempState = Object.assign({}, this.state, {
+        connectedToDevice: nextState.bluetooth.connectedToDevice
+      });
+      this.setState(tempState)
+    }
+
   }
 
 
@@ -131,12 +182,12 @@ class Splash extends Component {
     var deviceConnectionInfo = {};
     manager.startDeviceScan(null, null, (error, device) => {
       if(connectedToDevice != "In Progress"){
-        this.dispatch(scanInProgress(nextState))
+        this.state.dispatch(scanInProgress())
       }
       if (error) {
         return
       }
-      if (deviceName === this.deviceNameFromStorage) {  //should be 'raspberrypi'
+      if (deviceName === this.state.deviceName) {  //should be 'raspberrypi'
         manager.stopDeviceScan();
         manager.connectToDevice(device.id)
         .then((device) => {
@@ -153,7 +204,7 @@ class Splash extends Component {
         })
         .then((characteristic)=> {
           deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-          this.dispatch(saveConnectionData(deviceConnectionInfo))
+          this.state.dispatch(saveConnectionData(deviceConnectionInfo))
         },
         (error) => {
 
@@ -162,81 +213,21 @@ class Splash extends Component {
     });
   }
 
-  // componentWillReceiveProps(nextState){
-  //   // console.log(nextState);
-  //   if(!nextState.shouldRedirect){
-  //     console.log("if I see this - we have already redirected");
-  //   }
-  //   if(nextState.bluetooth.scanAndConnect == true && nextState.shouldRedirect == true){
-  //     setTimeout(()=>{
-  //       console.log("connected and abuot to auto nav to controller");
-  //       this.dispatch(NavigationActions.navigate({
-  //         routeName: 'TabNav',
-  //         action: NavigationActions.navigate({ routeName: 'controller'}),
-  //         redirectKey: true
-  //       }))
-  //     },2000);
-  //   }
-  //   if(nextState.bluetooth.scanAndConnect == false){
-  //     this.setState({status: "Engaging main thrusters"})
-  //   }
-  //   if(nextState.bluetooth.scanAndConnect == "In Progress"){
-  //     this.setState({status: "Calibrating quantum fluxuations"})
-  //   }
-  //   if(nextState.bluetooth.scanAndConnect == true){
-  //     this.setState({status: "Initiating warp drive"})
-  //   }
-  //   if(nextState.bluetooth.deviceNameFromStorage != null && nextState.bluetooth.bluetoothON_OFF != null){
   //
-  //     if ( nextState.bluetooth.deviceNameFromStorage == "noSavedDeviceName" || nextState.bluetooth.bluetoothON_OFF == false && nextState.shouldRedirect == true){
-  //       setTimeout(()=>{
-  //         console.log("no deviceNameFromStorage or bluetooth is off and we havent redirected yet so now we ganna");
-  //         console.log(nextState.shouldRedirect);
-  //         this.dispatch(NavigationActions.navigate({
-  //         routeName: 'TabNav',
-  //         action: NavigationActions.navigate({ routeName: 'bluetooth'}),
-  //         redirectKey: true
-  //       }))},5000);
-  //     }
-  //     else if (nextState.bluetooth.bluetoothON_OFF == true && nextState.shouldRedirect == true){
-  //       var deviceConnectionInfo = {}
-  //       if(nextState.bluetooth.scanAndConnect == false){
-
-  //       }
-  //
-  //     }
-  //     else if (nextState.shouldRedirect == true){
-  //
-  //       //TODO try to connect
-  //
-  //
-  //       // setTimeout(()=>{this.dispatch(NavigationActions.navigate({
-  //       //   routeName: 'TabNav',
-  //       //   action: NavigationActions.navigate({ routeName: 'controller'}),
-  //       //   redirectKey: true
-  //       // }))},5000);
-  //     }
-  //   }
-  // }
-
-
-
 
   navigationOptions = {
     header: null
   }
-  magicalFunction(){
-    this.dispatch(triggered(this.state))
-  };
+
 
   render() {
     return (
       <View>
         <Text style={{margin: '40%'}}>{this.state.status}</Text>
         <Button onPress={()=>{
-          {this.dispatch({
+          {this.state.dispatch({
             type: 'Redirect Is Triggered',
-            action: this.dispatch(NavigationActions.navigate({
+            action: this.state.dispatch(NavigationActions.navigate({
               routeName: 'bluetooth'
             }))
           })}
