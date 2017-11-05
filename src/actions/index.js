@@ -32,10 +32,9 @@ export const redirectForBluetoothConnection = (state) => {
   }
 }
 
-export const scanInProgress = (state) => {
+export const scanInProgress = () => {
   return {
     type: 'Scan In Progress',
-    state
   }
 }
 
