@@ -21,31 +21,19 @@ const styles = StyleSheet.create({
 
 
 
-const ProfileScreen = ({ profileProps, dispatch, navigation}) => {
-  // console.log(tempNavState);
-  AsyncStorage.getItem('savedDeviceName').then((value)=>{
-    if (value !== null){
-      // We have data!!
-      console.log("retried storage correctly");
-      console.log(value);
-    }
-  }).catch((error) => {
-    // Error retrieving data
-    console.log("error with storage");
-  })
-  
-console.log(profileProps.bluetoothReducer);
-var text= "placeholder"
+const Bluetooth = ({ Props, dispatch, navigation}) => {
+  // console.log(Props);
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
-        Profile Screen
+        Bluetooth Settings
       </Text>
-      <Button onPress={()=> dispatch(customAction())} title="execute custom action" />
+      <Text>
+        Save device name for auto connection
+      </Text>
       <TextInput
        style={{height: 40, width: 200, borderColor: 'gray', borderWidth: 1}}
        onChangeText={async (value) => {
-         console.log(value);
           try {
             await AsyncStorage.setItem('savedDeviceName', value);
           } catch (error) {
@@ -57,17 +45,13 @@ var text= "placeholder"
   )
 };
 
-ProfileScreen.propTypes = {
-  // isLoggedIn: PropTypes.bool.isRequired,
-  dispatch: PropTypes.func.isRequired,
-};
-
-ProfileScreen.navigationOptions = {
-  title: 'Profile',
+Bluetooth.navigationOptions = {
+  title: 'Bluetooth',
+  header: null
 };
 
 const mapStateToProps = state => ({
-  profileProps: state,
+  Props: state,
 });
 
-export default connect(mapStateToProps)(ProfileScreen);
+export default connect(mapStateToProps)(Bluetooth);
