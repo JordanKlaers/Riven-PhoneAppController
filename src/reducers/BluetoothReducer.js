@@ -20,9 +20,12 @@ import { BleManager } from 'react-native-ble-plx';
       var bluetooth = {
         manager: manager,
         bluetoothON_OFF: bluetoothSubscription,
-        deviceNameFromStorage: null,
+        deviceNameFromStorage: null,           //currentDeviceName
         connectedToDevice: false,         //false in progress or true for connected
-        shouldRedirect: true
+        shouldRedirect: true,
+        allSavedDevices: [],
+        numberOfSavedDevices:0,
+        
       }
 
   function BluetoothReducer(state= bluetooth, action) {
@@ -41,9 +44,12 @@ import { BleManager } from 'react-native-ble-plx';
         state.bluetoothON_OFF = action.state
         return { ...state };
       case 'Save Device Name From Storage':
-
-        state.deviceNameFromStorage = action.deviceName
+        state.numberOfSavedDevices ++;
+        state.deviceNameFromStorage = action.deviceName   //currentDeviceName
         return { ...state };
+      case 'Save Device Name To Storage':
+
+
       case 'Scan In Progress':
 
         state.connectedToDevice = "In Progress"

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, AsyncStorage, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, Button, TextInput, AsyncStorage, Dimensions, FlatList } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
@@ -31,7 +31,9 @@ class Bluetooth extends Component {
         height: 0,
         width: 0,
         bluetoothON_OFF: props.bluetooth.bluetoothON_OFF
-      }                     //should be just the ones that i need to worry about changing
+      },                     //should be just the ones that i need to worry about changing
+      textInput: "",
+      allSavedDevices: []
     }
   }
   componentWillMount(){
@@ -59,6 +61,22 @@ class Bluetooth extends Component {
   navigationOptions = {
     header: null
   }
+
+  updateText = (input)=>{
+    var tempState = Object.assign({}, this.state, {
+      textInput: input
+    })
+    this.setState(tempState)
+  }
+
+  logAll = ()=>{
+    AsyncStorage.getAllKeys().then((value)=>{
+      console.log(value);
+      }).catch((err)=>{
+
+      })
+  }
+
   render(){
 
     const style = {
@@ -66,8 +84,17 @@ class Bluetooth extends Component {
       width: this.state.screenDIM.width
     }
     return(
-      <View style={{height: style.height, width: style.width, backgroundColor: "blue"}}>
-
+      <View style={{height: style.height, width: style.width, backgroundColor: "silver"}}>
+        <TextInput
+         style={{height: style.height*0.1, width: style.width*0.8, marginTop: style.height*0.1, marginLeft: style.width*0.1,  borderColor: 'pink', borderWidth: 3, backgroundColor: 'white'}}
+         onChangeText={(input)=>{this.updateText(input)}}
+        />
+        <Button onPress={()=>{} } title="save" />
+        <Button onPress={()=>{this.logAll()} } title="log all" />
+        <FlatList
+          data={[{key: 'a'}, {key: 'b'}]}
+          renderItem={({item}) => <Text style={{marginLeft: '48%'}}>{item.key}</Text>}
+        />
       </View>
     )
   }

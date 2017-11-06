@@ -25,6 +25,13 @@ export const saveDeviceNameFROMStorage = (deviceName) => {
   }
 }
 
+export const saveDeviceNameTOStorage = (deviceName) => {
+  return {
+    type: 'Save Device Name To Storage',
+    deviceName
+  }
+}
+
 export const redirectForBluetoothConnection = (state) => {
   return {
     type: 'Redirect For Bluetooth Connection',
