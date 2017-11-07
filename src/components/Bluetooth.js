@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Button, TextInput, AsyncStorage, Dimensions, Fl
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
-import { customAction } from '../actions'
+import { deleteDeviceNameFromStorage } from '../actions'
 
 const styles = StyleSheet.create({
   container: {
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 class Bluetooth extends Component {
 
   constructor(props) {
-    console.log(props);
+
     super(props)
     this.state = {
       screenDIM: {
@@ -53,10 +53,22 @@ class Bluetooth extends Component {
       this.setState(tempState)
     })
   }
+
+  listDevices = []
   componentDidUpdate(state){
-    console.log(this.state);
+    // console.log(state.allSavedDevices);
+
   }
+
   componentWillReceiveProps(nextState){
+    if(nextState.bluetooth.allSavedDevices.length != this.state.allSavedDevices.length){
+      var temp = Object.assign({}, this.state, {
+        allSavedDevices: nextState.bluetooth.allSavedDevices
+      })
+      // console.log(temp);
+      this.setState(temp)
+    }
+
   }
   navigationOptions = {
     header: null
@@ -70,12 +82,32 @@ class Bluetooth extends Component {
   }
 
   logAll = ()=>{
-    AsyncStorage.getAllKeys().then((value)=>{
-      console.log(value);
-      }).catch((err)=>{
-
-      })
+    console.log(this.state.allSavedDevices);
+    // AsyncStorage.getAllKeys().then((value)=>{
+    //   console.log(value);
+    //   }).catch((err)=>{
+    //
+    //   })
   }
+
+  saveNewDevice = async ()=>{
+    if(this.state.textInput != ""){
+      try {
+        await AsyncStorage.setItem(this.state.textInput, this.state.textInput);
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  }
+
+  removeDevice = (name) => {
+    console.log("--- this one??????");
+    console.log(name);
+    this.props.dispatch(deleteDeviceNameFromStorage(name))
+  }
+
+
+
 
   render(){
 
@@ -83,18 +115,34 @@ class Bluetooth extends Component {
       height: this.state.screenDIM.height,
       width: this.state.screenDIM.width
     }
+    var uniqueID = 0;
+//     await const listDevices = this.state.allSavedDevices.map((name) =>{
+//       uniqueID++;
+//       (
+//           <Text>{name}</Text>
+
+//     )})
+// console.log(listDevices);
+
     return(
       <View style={{height: style.height, width: style.width, backgroundColor: "silver"}}>
         <TextInput
          style={{height: style.height*0.1, width: style.width*0.8, marginTop: style.height*0.1, marginLeft: style.width*0.1,  borderColor: 'pink', borderWidth: 3, backgroundColor: 'white'}}
          onChangeText={(input)=>{this.updateText(input)}}
         />
-        <Button onPress={()=>{} } title="save" />
+        <Button onPress={()=>{this.saveNewDevice()} } title="save" />
         <Button onPress={()=>{this.logAll()} } title="log all" />
-        <FlatList
-          data={[{key: 'a'}, {key: 'b'}]}
-          renderItem={({item}) => <Text style={{marginLeft: '48%'}}>{item.key}</Text>}
-        />
+        {
+          this.state.allSavedDevices.map((name, indx) =>(
+            <View key={indx}>
+              <Text>{name}</Text>
+              <Button onPress={()=>{
+                this.removeDevice(name)
+                // console.log(name);
+              }} title="x" />
+            </View>
+          ))
+        }
       </View>
     )
   }

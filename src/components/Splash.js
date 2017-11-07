@@ -11,7 +11,8 @@ import {
   redirectForBluetoothConnection,
   scanInProgress,
   connected,
-  triggered
+  triggered,
+  loadDeviceNamesFromStorage
 } from '../actions'
 import { AsyncStorage } from 'react-native';
 
@@ -32,7 +33,7 @@ class Splash extends Component {
       localRedirectBool: true,
       manager: this.props.bluetooth.manager,
       currentBluetoothState: this.props.bluetooth.subscription || null,
-      deviceName: this.props.bluetooth.deviceNameFromStorage || null,  //currentDeviceName
+      deviceName: this.props.bluetooth.deviceNameFromStorage || "noSavedDeviceName",  //currentDeviceName
       dispatch: this.props.navigation.dispatch,
       initiatedSetTimeout: false,
       connectedToDevice: false,
@@ -64,18 +65,20 @@ componentDidMount(){
     }, true);
 
     AsyncStorage.getAllKeys().then((value)=>{
-      if(value.includes('savedDeviceName')){
-        AsyncStorage.getItem("savedDeviceName").then((name)=>{
-          if(this.state.deviceNameFromStorage != name){  //currentDeviceName
-            this.state.dispatch(saveDeviceNameFROMStorage(name))  //currentDeviceName
-          }
-        })
-      }
-      else{
-        if(this.deviceNameFromStorage != "noSavedDeviceName"){   //currentDeviceName
-          this.state.dispatch(saveDeviceNameFROMStorage({name:"noSavedDeviceName"}))   //currentDeviceName
-        }
-      }
+      console.log(value);
+      this.state.dispatch(loadDeviceNamesFromStorage(value))
+      // if(value.includes('savedDeviceName')){
+      //   AsyncStorage.getItem("savedDeviceName").then((name)=>{
+      //     if(this.state.deviceNameFromStorage != name){  //currentDeviceName
+      //       this.state.dispatch(saveDeviceNameFROMStorage(name))  //currentDeviceName
+      //     }
+      //   })
+      // }
+      // else{
+      //   if(this.deviceNameFromStorage != "noSavedDeviceName"){   //currentDeviceName
+      //     this.state.dispatch(saveDeviceNameFROMStorage({name:"noSavedDeviceName"}))   //currentDeviceName
+      //   }
+      // }
       }).catch((err)=>{
 
       })

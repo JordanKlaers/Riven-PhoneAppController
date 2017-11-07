@@ -30,14 +30,7 @@ const Controller = ({ Props, dispatch, navigation}) => {
       <Button onPress={()=> dispatch(customAction())} title="execute custom action" />
       <TextInput
        style={{height: 40, width: 200, borderColor: 'gray', borderWidth: 1}}
-       onChangeText={async (value) => {
-         console.log(value);
-          try {
-            await AsyncStorage.setItem('savedDeviceName', value);
-          } catch (error) {
-            console.log(error);
-          }
-       }}
+       
      />
     </View>
   )

@@ -18,16 +18,32 @@ export const saveBluetoothState = (state) => {
   }
 }
 
-export const saveDeviceNameFROMStorage = (deviceName) => {
+export const saveDeviceNameFROMStorage = (deviceName) => { //replaced by the one below
   return {
     type: 'Save Device Name From Storage',
     deviceName
   }
 }
 
+export const loadDeviceNamesFromStorage = ( devices ) =>{
+  return {
+    type: 'Load Device Names From Storage',
+    devices
+  }
+}
+
 export const saveDeviceNameTOStorage = (deviceName) => {
   return {
     type: 'Save Device Name To Storage',
+    deviceName
+  }
+}
+
+export const deleteDeviceNameFromStorage = ( deviceName ) =>{
+  console.log("THIS?");
+  console.log(deviceName);
+  return {
+    type: 'Delete Device Names From Storage',
     deviceName
   }
 }

@@ -20,12 +20,11 @@ import { BleManager } from 'react-native-ble-plx';
       var bluetooth = {
         manager: manager,
         bluetoothON_OFF: bluetoothSubscription,
-        deviceNameFromStorage: null,           //currentDeviceName
+        selectedDevice: null,           //currentDeviceName
         connectedToDevice: false,         //false in progress or true for connected
         shouldRedirect: true,
-        allSavedDevices: [],
+        allSavedDevices: [],         //the key == the device name for all
         numberOfSavedDevices:0,
-        
       }
 
   function BluetoothReducer(state= bluetooth, action) {
@@ -34,21 +33,19 @@ import { BleManager } from 'react-native-ble-plx';
 
         state.connectedToDevice = true;                    //need to save so we can send data to the service
         return { ...state, ...action.connectionData };
-      case 'Saving Device Name For Auto Connection':
-
-        AsyncStorage.setItem('savedDeviceName', action.deviceName).then(()=>{
-          return { ...state, ...action.deviceName };
-        })
       case 'Save Bluetooth State':
 
         state.bluetoothON_OFF = action.state
         return { ...state };
       case 'Save Device Name From Storage':
-        state.numberOfSavedDevices ++;
+
         state.deviceNameFromStorage = action.deviceName   //currentDeviceName
         return { ...state };
-      case 'Save Device Name To Storage':
-
+      case 'Load Device Names From Storage':
+        var result = Object.assign({}, state, {
+          allSavedDevices: action.devices
+        });
+        return result
 
       case 'Scan In Progress':
 
@@ -59,8 +56,18 @@ import { BleManager } from 'react-native-ble-plx';
         var result = Object.assign({}, state, {
           shouldRedirect: false
         });
+        return result;
+      case 'Delete Device Names From Storage':
+      // console.log(action);
+      console.log("hit");
+      AsyncStorage.removeItem(action.deviceName);
+        var result = Object.assign({}, state,{
+          allSavedDevices: state.allSavedDevices.filter((name)=>{
+            return name != action.deviceName;
+          })
+        });
         return result
-        break;
+
       default:
         state.FROMBLUETOOTh = "FROM BLUETOOTHER"
         return state;
