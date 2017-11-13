@@ -55,6 +55,20 @@ export const redirectForBluetoothConnection = (state) => {
   }
 }
 
+export const loadDefaultDeviceFromStorage = (name) => {
+  return {
+    type: 'Load Default Device From Storage',
+    name
+  }
+}
+
+export const setDefaultDevice = (name) => {
+  return {
+    type: 'Set Default Device',
+    name
+  }
+}
+
 export const scanInProgress = () => {
   return {
     type: 'Scan In Progress',

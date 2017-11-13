@@ -20,7 +20,7 @@ import { BleManager } from 'react-native-ble-plx';
       var bluetooth = {
         manager: manager,
         bluetoothON_OFF: bluetoothSubscription,
-        selectedDevice: null,           //currentDeviceName
+        defaultDevice: null,           //currentDeviceName
         connectedToDevice: false,         //false in progress or true for connected
         shouldRedirect: true,
         allSavedDevices: [],         //the key == the device name for all
@@ -43,10 +43,22 @@ import { BleManager } from 'react-native-ble-plx';
         return { ...state };
       case 'Load Device Names From Storage':
         var result = Object.assign({}, state, {
-          allSavedDevices: action.devices
+          allSavedDevices: action.devices.filter((name)=> {
+            return name != "defaultDevice"
+          })
         });
         return result
-
+      case 'Load Default Device From Storage':
+        var result = Object.assign({}, state, {
+          defaultDevice: action.name
+        });
+        return result;
+      case 'Set Default Device':
+        var result = Object.assign({}, state,{
+          defaultDevice: action.name
+        });
+        console.log(result);
+        return result
       case 'Scan In Progress':
 
         state.connectedToDevice = "In Progress"
@@ -58,9 +70,9 @@ import { BleManager } from 'react-native-ble-plx';
         });
         return result;
       case 'Delete Device Names From Storage':
-      // console.log(action);
-      console.log("hit");
-      AsyncStorage.removeItem(action.deviceName);
+        // console.log(action);
+        console.log("hit");
+        AsyncStorage.removeItem(action.deviceName);
         var result = Object.assign({}, state,{
           allSavedDevices: state.allSavedDevices.filter((name)=>{
             return name != action.deviceName;

@@ -1,9 +1,24 @@
 import React, { Component } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, AsyncStorage, Dimensions, FlatList } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TextInput,
+  AsyncStorage,
+  Dimensions,
+  FlatList,
+  TouchableHighlight,
+  Picker,
+  Switch
+} from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
-import { deleteDeviceNameFromStorage } from '../actions'
+import {
+  deleteDeviceNameFromStorage,
+  setDefaultDevice
+} from '../actions'
 
 const styles = StyleSheet.create({
   container: {
@@ -29,11 +44,13 @@ class Bluetooth extends Component {
       screenDIM: {
         isVerticle: true,
         height: 0,
-        width: 0,
-        bluetoothON_OFF: props.bluetooth.bluetoothON_OFF
+        width: 0
       },                     //should be just the ones that i need to worry about changing
+      bluetoothON_OFF: props.bluetooth.bluetoothON_OFF,
+      connectedToDevice: props.bluetooth.connectedToDevice,
       textInput: "",
-      allSavedDevices: []
+      allSavedDevices: [],
+      defaultDevice: props.bluetooth.defaultDevice
     }
   }
   componentWillMount(){
@@ -68,7 +85,18 @@ class Bluetooth extends Component {
       // console.log(temp);
       this.setState(temp)
     }
-
+    if(nextState.bluetooth.defaultDevice != this.state.defaultDevice) {
+      var temp = Object.assign({}, this.state, {
+        defaultDevice: nextState.bluetooth.defaultDevice
+      })
+      this.setState(temp)
+    }
+    if(nextState.bluetooth.connectedToDevice != this.state.connectedToDevice) {
+      var temp = Object.assign({}, this.state, {
+        connectedToDevice: nextState.bluetooth.connectedToDevice
+      })
+      this.setState(temp)
+    }
   }
   navigationOptions = {
     header: null
@@ -101,31 +129,134 @@ class Bluetooth extends Component {
   }
 
   removeDevice = (name) => {
-    console.log("--- this one??????");
-    console.log(name);
     this.props.dispatch(deleteDeviceNameFromStorage(name))
   }
 
+  selectDefaultDevice = (name) => {
+    AsyncStorage.setItem('defaultDevice', name)
+    this.props.dispatch(setDefaultDevice(name))
+  }
 
+  testing = (name, index) => {
+    console.log("name: ", name , "index: ", index);
+  }
 
-
+  connectionStatus = () => {
+    if(this.state.connectToDevice === "In Progress"){
+      return this.state.connectToDevice
+    }
+    else {
+      return this.state.connectToDevice ?  "Connected" : "No Connection"
+    }
+  }
   render(){
 
-    const style = {
+    const dimensions = {
       height: this.state.screenDIM.height,
       width: this.state.screenDIM.width
     }
+    const style = {
+      page: {
+        height: dimensions.height,
+        width: dimensions.width,
+        backgroundColor: "lightblue"
+      },
+      bluetoothContainer: {
+        width: dimensions.width - 40,
+        margin: 20,
+        height: 200,
+        backgroundColor: "white",
+        // display: 'flex',
+      },
+      selectionContainer: {
+        width: dimensions.width - 40,
+        margin: 20,
+        height: 200,
+        backgroundColor: "white"
+      },
+      value: {
+        alignSelf: "flex-end",
+        backgroundColor: 'orange',
+        marginRight: 10
+      },
+      row: {
+        display: 'flex',
+        flexDirection: 'row',
+        flex: 1
+      },
+      left: {
+        flex:1,
+        height: 50,
+        backgroundColor: 'yellow'
+      },
+      right: {
+        alignItems: 'flex-end',
+        flex:1,
+        backgroundColor: 'orange',
+        height: 50
+      }
+    }
     var uniqueID = 0;
-//     await const listDevices = this.state.allSavedDevices.map((name) =>{
-//       uniqueID++;
-//       (
-//           <Text>{name}</Text>
 
-//     )})
-// console.log(listDevices);
 
     return(
-      <View style={{height: style.height, width: style.width, backgroundColor: "silver"}}>
+      <View style={style.page}>
+        <View style={style.bluetoothContainer}>
+            <View style={style.row}>
+              <View style={style.left}>
+                <Text>
+                  Bluetooth
+                </Text>
+              </View>
+              <View style={style.right}>
+                <Text>
+                  {this.state.bluetoothON_OFF ? "On" : "Off"}
+                </Text>
+              </View>
+            </View>
+
+            <View style={style.row}>
+              <View style={style.left}>
+                <Text>
+                  Connection
+                </Text>
+              </View>
+              <View style={style.right}>
+                <Text>
+                  {this.connectionStatus()}
+                </Text>
+              </View>
+            </View>
+
+            <View style={style.row}>
+              <View style={style.left}>
+                <Text>
+                 Device
+                </Text>
+              </View>
+              <View style={style.right}>
+                <Text>
+                  {this.state.defaultDevice}
+                </Text>
+              </View>
+            </View>
+        </View>
+
+
+        <View style={style.selectionContainer} >
+
+        </View>
+
+
+
+
+
+        <Text>{this.state.defaultDevice}</Text>
+
+        <Text>
+          {this.state.bluetoothON_OFF ? "On" : "Off"}
+        </Text>
+
         <TextInput
          style={{height: style.height*0.1, width: style.width*0.8, marginTop: style.height*0.1, marginLeft: style.width*0.1,  borderColor: 'pink', borderWidth: 3, backgroundColor: 'white'}}
          onChangeText={(input)=>{this.updateText(input)}}
@@ -135,7 +266,9 @@ class Bluetooth extends Component {
         {
           this.state.allSavedDevices.map((name, indx) =>(
             <View key={indx}>
-              <Text>{name}</Text>
+              <TouchableHighlight onPress={()=>{this.selectDefaultDevice(name)}}>
+                <Text>{name}</Text>
+              </TouchableHighlight>
               <Button onPress={()=>{
                 this.removeDevice(name)
                 // console.log(name);

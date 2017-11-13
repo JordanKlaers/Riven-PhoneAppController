@@ -12,7 +12,8 @@ import {
   scanInProgress,
   connected,
   triggered,
-  loadDeviceNamesFromStorage
+  loadDeviceNamesFromStorage,
+  loadDefaultDeviceFromStorage
 } from '../actions'
 import { AsyncStorage } from 'react-native';
 
@@ -67,13 +68,13 @@ componentDidMount(){
     AsyncStorage.getAllKeys().then((value)=>{
       console.log(value);
       this.state.dispatch(loadDeviceNamesFromStorage(value))
-      // if(value.includes('savedDeviceName')){
-      //   AsyncStorage.getItem("savedDeviceName").then((name)=>{
-      //     if(this.state.deviceNameFromStorage != name){  //currentDeviceName
-      //       this.state.dispatch(saveDeviceNameFROMStorage(name))  //currentDeviceName
-      //     }
-      //   })
-      // }
+      if(value.includes('defaultDevice')){
+        AsyncStorage.getItem("defaultDevice").then((name)=>{
+          if(this.state.defaultDevice != name){  //currentDeviceName
+            this.state.dispatch(loadDefaultDeviceFromStorage(name))  //currentDeviceName
+          }
+        })
+      }
       // else{
       //   if(this.deviceNameFromStorage != "noSavedDeviceName"){   //currentDeviceName
       //     this.state.dispatch(saveDeviceNameFROMStorage({name:"noSavedDeviceName"}))   //currentDeviceName
