@@ -10,15 +10,22 @@ import {
   FlatList,
   TouchableHighlight,
   Picker,
-  Switch
+  Switch,
+  Image
 } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
 import {
   deleteDeviceNameFromStorage,
-  setDefaultDevice
+  setDefaultDevice,
+  saveDeviceNameTOStorage,
+  saveConnectionData,
+  scanInProgress
 } from '../actions'
+import upRight from '../style/bluetooth/upright.js'
+
+const backgroundImage = require('../../image/bluetooth.jpg');
 
 const styles = StyleSheet.create({
   container: {
@@ -50,7 +57,10 @@ class Bluetooth extends Component {
       connectedToDevice: props.bluetooth.connectedToDevice,
       textInput: "",
       allSavedDevices: [],
-      defaultDevice: props.bluetooth.defaultDevice
+      defaultDevice: props.bluetooth.defaultDevice,
+      toggelSelection: false,
+      manager: props.bluetooth.manager,
+      dispatch: this.props.navigation.dispatch
     }
   }
   componentWillMount(){
@@ -71,24 +81,30 @@ class Bluetooth extends Component {
     })
   }
 
-  listDevices = []
   componentDidUpdate(state){
-    // console.log(state.allSavedDevices);
 
   }
 
   componentWillReceiveProps(nextState){
-    if(nextState.bluetooth.allSavedDevices.length != this.state.allSavedDevices.length){
+    console.log("NEXT all saved devices: ", nextState.bluetooth.allSavedDevices);
+    console.log("PREVIOUS all saved devices: ", this.state.allSavedDevices);
+    if(nextState.bluetooth.allSavedDevices != this.state.allSavedDevices){
       var temp = Object.assign({}, this.state, {
         allSavedDevices: nextState.bluetooth.allSavedDevices
       })
-      // console.log(temp);
-      this.setState(temp)
+      this.setState(temp, ()=>{
+        this.forceUpdate();
+      })
     }
     if(nextState.bluetooth.defaultDevice != this.state.defaultDevice) {
       var temp = Object.assign({}, this.state, {
         defaultDevice: nextState.bluetooth.defaultDevice
       })
+      if(!this.state.allSavedDevices.includes(nextState.bluetooth.defaultDevice) && nextState.bluetooth.defaultDevice != ""){
+        console.log("messy stuff");
+        temp.allSavedDevices.push(nextState.bluetooth.defaultDevice)
+      }
+      console.log(nextState.bluetooth.defaultDevice, ": should be the current default device");
       this.setState(temp)
     }
     if(nextState.bluetooth.connectedToDevice != this.state.connectedToDevice) {
@@ -109,36 +125,26 @@ class Bluetooth extends Component {
     this.setState(tempState)
   }
 
-  logAll = ()=>{
-    console.log(this.state.allSavedDevices);
-    // AsyncStorage.getAllKeys().then((value)=>{
-    //   console.log(value);
-    //   }).catch((err)=>{
-    //
-    //   })
-  }
-
-  saveNewDevice = async ()=>{
-    if(this.state.textInput != ""){
-      try {
-        await AsyncStorage.setItem(this.state.textInput, this.state.textInput);
-      } catch (error) {
-        console.log(error);
-      }
+  saveNewDevice = ()=>{
+    if(this.state.textInput != "" && !this.state.allSavedDevices.includes(this.state.textInput.toLowerCase().replace(/\s+/g, ''))) {
+      this.props.dispatch(saveDeviceNameTOStorage(this.state.textInput.toLowerCase().replace(/\s+/g, '')))
     }
   }
 
   removeDevice = (name) => {
-    this.props.dispatch(deleteDeviceNameFromStorage(name))
+    var tempState = Object.assign({}, this.state, {
+      allSavedDevices: this.state.allSavedDevices.filter((deviceName)=>{
+        return deviceName != name;
+      })
+    })
+    this.setState(tempState, ()=> {
+      this.props.dispatch(deleteDeviceNameFromStorage(name));
+    })
   }
 
   selectDefaultDevice = (name) => {
     AsyncStorage.setItem('defaultDevice', name)
     this.props.dispatch(setDefaultDevice(name))
-  }
-
-  testing = (name, index) => {
-    console.log("name: ", name , "index: ", index);
   }
 
   connectionStatus = () => {
@@ -149,162 +155,317 @@ class Bluetooth extends Component {
       return this.state.connectToDevice ?  "Connected" : "No Connection"
     }
   }
+
+  toggelDefaultDeviceSelection = () => {
+    var temp = Object.assign({}, this.state, {
+      toggelSelection: !this.state.toggelSelection
+    })
+    this.setState(temp)
+  }
+
+
+  tryToConnect = (deviceName, connectedToDevice, manager)=>{
+    var deviceConnectionInfo = {};
+    if(connectedToDevice == "No connection"){
+      console.log("connceted to device was -no connection");
+      manager.startDeviceScan(null, null, (error, device) => {
+        if(connectedToDevice != "In Progress"){
+          this.state.dispatch(scanInProgress())
+          var temp = Object.assign({}, this.state, {
+            connectedToDevice: "In Progress"
+          })
+          this.setState(temp)
+        }
+        if (error) {
+          return
+        }
+        if (device.name == this.state.defaultDevice) {  //should be 'raspberrypi'
+        console.log("the scan matched default device name");
+          manager.stopDeviceScan();
+          manager.connectToDevice(device.id)
+          .then((device) => {
+            deviceConnectionInfo.device = device;
+            return device.discoverAllServicesAndCharacteristics();
+          })
+          .then((device) => {
+            deviceConnectionInfo.deviceID = device.id
+            return manager.servicesForDevice(device.id)
+          })
+          .then((services) => {
+            deviceConnectionInfo.writeServiceUUID = services[2].uuid
+            return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+          })
+          .then((characteristic)=> {
+            deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+            this.state.dispatch(saveConnectionData(deviceConnectionInfo))
+            // var temp = Object.assign({}, this.state, {
+            //   connectedToDevice: "Connected"
+            // })
+            // this.setState(temp)
+          },
+          (error) => {
+
+          });
+        }
+      });
+    }
+
+  }
+
+
+
   render(){
+
+
 
     const dimensions = {
       height: this.state.screenDIM.height,
       width: this.state.screenDIM.width
     }
     const style = {
-      page: {
-        height: dimensions.height,
-        width: dimensions.width,
-        backgroundColor: "lightblue"
-      },
-      bluetoothContainer: {
-        width: dimensions.width - 40,
-        margin: 20,
-        height: 200,
-        backgroundColor: "white",
-        // display: 'flex',
-      },
-      selectionContainer: {
-        width: dimensions.width - 40,
-        margin: 20,
-        height: 200,
-        backgroundColor: "white"
-      },
-      value: {
-        alignSelf: "flex-end",
-        backgroundColor: 'orange',
-        marginRight: 10
-      },
-      row: {
-        display: 'flex',
-        flexDirection: 'row',
-        flex: 1
-      },
-      left: {
-        flex:1,
-        height: 50,
-        backgroundColor: 'yellow'
-      },
-      right: {
-        alignItems: 'flex-end',
-        flex:1,
-        backgroundColor: 'orange',
-        height: 50
+      upRight: {
+        overlay: {
+          position: 'absolute',
+          height: dimensions.height,
+          width: dimensions.width,
+        },
+        bluetoothContainer: {
+          width: dimensions.width - 40,
+          margin: 20,
+          height: 200,
+          borderRadius: 10,
+          borderWidth: 5,
+          borderColor: 'black',
+          backgroundColor: "#bababa",
+          // display: 'flex',
+        },
+        row: {
+          display: 'flex',
+          flexDirection: 'row',
+          flex: 1
+        },
+        left: {
+          flex:1,
+          height: 50,
+        },
+        right: {
+          alignItems: 'flex-end',
+          flex:1,
+          height: 50
+        },
+        bluetoothText: {
+          margin: 15
+        },
+        deviceNameTouchable: {
+          alignItems: 'flex-end',
+          width: '100%',
+          height: 50
+        },
+        deviceNameInput: {
+          height: 40,
+          width: dimensions.width - 60,
+          marginLeft: 20,
+          marginRight: 20,
+          backgroundColor: 'white',
+          borderRadius: 10,
+          borderWidth: 5,
+          borderColor: 'black',
+        },
+        deviceList: {
+          width: dimensions.width - 40,
+          margin: 20,
+          height: 150,
+          borderRadius: 10,
+          borderWidth: 5,
+          borderColor: 'black',
+          backgroundColor: "#bababa",
+        },
+        saveButton: {
+          height: 40,
+          width: dimensions.width - 60,
+          marginLeft: 20,
+          marginRight: 20,
+          backgroundColor: 'white',
+          borderRadius: 10,
+          borderWidth: 5,
+          borderColor: 'black',
+        }
       }
     }
     var uniqueID = 0;
+    const resizeMode = "center";
 
+    if (this.state.toggelSelection) {
+      return(
+        <View>
 
-    return(
-      <View style={style.page}>
-        <View style={style.bluetoothContainer}>
-            <View style={style.row}>
-              <View style={style.left}>
-                <Text>
-                  Bluetooth
-                </Text>
-              </View>
-              <View style={style.right}>
-                <Text>
-                  {this.state.bluetoothON_OFF ? "On" : "Off"}
-                </Text>
-              </View>
+          <Image
+            style={{
+              height: dimensions.height,
+              width: dimensions.width,
+              position: "relative"
+            }}
+            source={backgroundImage}
+          />
+          <View style={style.upRight.overlay}>
+            <View style={style.upRight.bluetoothContainer}>
+                <View style={style.upRight.row}>
+                  <View style={style.upRight.left}>
+                    <Text style={style.upRight.bluetoothText}>
+                      Bluetooth
+                    </Text>
+                  </View>
+                  <View style={style.upRight.right}>
+                    <Text style={style.upRight.bluetoothText}>
+                      {this.state.bluetoothON_OFF ? "On" : "Off"}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={style.upRight.row}>
+                  <View style={style.upRight.left}>
+                    <Text style={style.upRight.bluetoothText}>
+                      Connection
+                    </Text>
+                  </View>
+                  <View style={style.upRight.right}>
+                    <Text style={style.upRight.bluetoothText}>
+                      {this.state.connectedToDevice}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={style.upRight.row}>
+                  <View style={style.upRight.left}>
+                    <Text style={style.upRight.bluetoothText}>
+                     Device
+                    </Text>
+                  </View>
+                  <View style={style.upRight.right}>
+                    <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.toggelDefaultDeviceSelection()}}>
+                      <Text style={style.upRight.bluetoothText}>
+                        {this.state.defaultDevice}
+                      </Text>
+                    </TouchableHighlight>
+                  </View>
+                </View>
             </View>
 
-            <View style={style.row}>
-              <View style={style.left}>
-                <Text>
-                  Connection
-                </Text>
-              </View>
-              <View style={style.right}>
-                <Text>
-                  {this.connectionStatus()}
-                </Text>
-              </View>
+            <View style={style.upRight.deviceList} >
+            {this.state.allSavedDevices.map((name, indx) =>(
+              <View key={indx}>
+                 <TouchableHighlight onPress={()=>{this.selectDefaultDevice(name)}}>
+                   <Text>
+                     {name}
+                   </Text>
+                 </TouchableHighlight>
+                   <Button onPress={()=>{
+                     this.removeDevice(name)
+                   }} title="x" />
+               </View>
+            ))}
             </View>
 
-            <View style={style.row}>
-              <View style={style.left}>
-                <Text>
-                 Device
-                </Text>
-              </View>
-              <View style={style.right}>
-                <Text>
-                  {this.state.defaultDevice}
-                </Text>
-              </View>
-            </View>
+
+            <TouchableHighlight onPress={()=>{this.tryToConnect(this.state.defaultDevice, this.state.connectedToDevice, this.state.manager)}} style={style.upRight.saveButton}>
+              <Text>
+                Try to Connect
+              </Text>
+            </TouchableHighlight>
+
+
+
+            <TextInput
+             style={style.upRight.deviceNameInput}
+             onChangeText={(input)=>{this.updateText(input)}}
+            />
+            <TouchableHighlight onPress={()=>{this.saveNewDevice()}} style={style.upRight.saveButton}>
+              <Text>
+                Save
+              </Text>
+            </TouchableHighlight>
+          </View>
         </View>
+      )
+    }
+    else {
+      return (
+        <View>
 
+          <Image
+            style={{
+              height: dimensions.height,
+              width: dimensions.width
 
-        <View style={style.selectionContainer} >
+            }}
+            source={backgroundImage}
+          />
+          <View style={style.upRight.overlay}>
+            <View style={style.upRight.bluetoothContainer}>
+                <View style={style.upRight.row}>
+                  <View style={style.upRight.left}>
+                    <Text style={style.upRight.bluetoothText}>
+                      Bluetooth
+                    </Text>
+                  </View>
+                  <View style={style.upRight.right}>
+                    <Text style={style.upRight.bluetoothText}>
+                      {this.state.bluetoothON_OFF ? "On" : "Off"}
+                    </Text>
+                  </View>
+                </View>
 
-        </View>
+                <View style={style.upRight.row}>
+                  <View style={style.upRight.left}>
+                    <Text style={style.upRight.bluetoothText}>
+                      Connection
+                    </Text>
+                  </View>
+                  <View style={style.upRight.right}>
+                    <Text style={style.upRight.bluetoothText}>
+                      {this.state.connectedToDevice}
+                    </Text>
+                  </View>
+                </View>
 
-
-
-
-
-        <Text>{this.state.defaultDevice}</Text>
-
-        <Text>
-          {this.state.bluetoothON_OFF ? "On" : "Off"}
-        </Text>
-
-        <TextInput
-         style={{height: style.height*0.1, width: style.width*0.8, marginTop: style.height*0.1, marginLeft: style.width*0.1,  borderColor: 'pink', borderWidth: 3, backgroundColor: 'white'}}
-         onChangeText={(input)=>{this.updateText(input)}}
-        />
-        <Button onPress={()=>{this.saveNewDevice()} } title="save" />
-        <Button onPress={()=>{this.logAll()} } title="log all" />
-        {
-          this.state.allSavedDevices.map((name, indx) =>(
-            <View key={indx}>
-              <TouchableHighlight onPress={()=>{this.selectDefaultDevice(name)}}>
-                <Text>{name}</Text>
-              </TouchableHighlight>
-              <Button onPress={()=>{
-                this.removeDevice(name)
-                // console.log(name);
-              }} title="x" />
+                <View style={style.upRight.row}>
+                  <View style={style.upRight.left}>
+                    <Text style={style.upRight.bluetoothText}>
+                     Device
+                    </Text>
+                  </View>
+                  <View style={style.upRight.right}>
+                    <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.toggelDefaultDeviceSelection()}}>
+                      <Text style={style.upRight.bluetoothText}>
+                        {this.state.defaultDevice}
+                      </Text>
+                    </TouchableHighlight>
+                  </View>
+                </View>
             </View>
-          ))
-        }
-      </View>
-    )
+
+            <TouchableHighlight onPress={()=>{this.tryToConnect(this.state.defaultDevice, this.state.connectedToDevice, this.state.manager)}} style={style.upRight.saveButton}>
+              <Text>
+                Try to Connect
+              </Text>
+            </TouchableHighlight>
+
+
+            <TextInput
+             style={style.upRight.deviceNameInput}
+             onChangeText={(input)=>{this.updateText(input)}}
+            />
+            <TouchableHighlight onPress={()=>{this.saveNewDevice()}} style={style.upRight.saveButton}>
+              <Text>
+                Save
+              </Text>
+            </TouchableHighlight>
+          </View>
+        </View>
+      )
+    }
   }
 }
-
-//
-// <Text style={styles.welcome}>
-//   Bluetooth Settings
-// </Text>
-// <Text>
-//   Save device name for auto connection
-// </Text>
-// <TextInput
-//  style={{height: 40, width: 200, borderColor: 'gray', borderWidth: 1}}
-//  onChangeText={async (value) => {
-//     try {
-//       await AsyncStorage.setItem('savedDeviceName', value);
-//     } catch (error) {
-//       console.log(error);
-//     }
-//  }}
-// />
-
-// const Bluetooth = ({ Props, dispatch, navigation}) => {
-//   // console.log(Props);
-//   return (
-//
-//   )
-// };
 
 Bluetooth.navigationOptions = {
   title: 'Bluetooth',

@@ -34,10 +34,10 @@ class Splash extends Component {
       localRedirectBool: true,
       manager: this.props.bluetooth.manager,
       currentBluetoothState: this.props.bluetooth.subscription || null,
-      deviceName: this.props.bluetooth.deviceNameFromStorage || "noSavedDeviceName",  //currentDeviceName
+      deviceName: this.props.bluetooth.defaultDevice || "",  //currentDeviceName
       dispatch: this.props.navigation.dispatch,
       initiatedSetTimeout: false,
-      connectedToDevice: false,
+      connectedToDevice: props.bluetooth.connectedToDevice,
       dimensions: {}
     }
   }
@@ -93,7 +93,7 @@ componentDidMount(){
     var manager = state.bluetooth.manager
 
     if(redirectBool){ //are we still on splash page
-      if(connectedToDevice){  //are we connected to the device
+      if(connectedToDevice == "Connected"){  //are we connected to the device
 
 
         if(this.state.initiatedSetTimeout == false){
@@ -120,10 +120,10 @@ componentDidMount(){
 
       }
       else {
-        if(deviceName != null && bluetoothON_OFF != null && deviceName !=  "noSavedDeviceName" && bluetoothON_OFF != false){ // if we have a device name and bluetooth is on try to connect
+        if(deviceName != null && bluetoothON_OFF != null && deviceName !=  "" && bluetoothON_OFF != false){ // if we have a device name and bluetooth is on try to connect
           this.tryToConnect(deviceName, connectedToDevice, manager)
         }
-        else if((deviceName ==  "noSavedDeviceName" && bluetoothON_OFF != null) || (deviceName != null && bluetoothON_OFF == false)){
+        else if((deviceName ==  "" && bluetoothON_OFF != null) || (deviceName != null && bluetoothON_OFF == false)){
           if(this.state.initiatedSetTimeout == false){
 
             var tempState = Object.assign({}, this.state, {
@@ -260,74 +260,3 @@ const mapStateToProps = state => ({
 });
 
 export default connect(mapStateToProps)(Splash);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// AsyncStorage.getItem('savedDeviceName').then((value)=>{
-//   if (value !== null){
-//   }
-// }).catch((error) => {
-
-// })
-//
-// var manager = Props.nav.manager
-// var tempState = {};
-// const subscription = manager.onStateChange((state) => {
-//       if (state === 'PoweredOn') {
-
-
-//           scanAndConnect();
-//           // subscription.remove();
-//       }
-//       else {
-//
-//       }
-//   }, true);
-//
-// var scanAndConnect = () => {
-//
-//   manager.startDeviceScan(null, null, (error, device) => {
-//
-//       if (error) {
-//           return
-//       }
-//       if (device.name === 'raspberrypi') {
-//           manager.stopDeviceScan();
-//
-//           manager.connectToDevice(device.id)
-//               .then((device) => {
-//                 tempState.device = device;
-//                 return device.discoverAllServicesAndCharacteristics();
-//               })
-//               .then((device) => {
-//                 tempState.deviceID = device.id
-//                 return manager.servicesForDevice(device.id)
-//               })
-//               .then((services) => {
-//
-//                 tempState.writeServiceUUID = services[2].uuid
-//
-//                 return manager.characteristicsForDevice(tempState.deviceID, tempState.writeServiceUUID)
-//               }).then((characteristic)=> {
-//
-//                 tempState.writeCharacteristicUUID = characteristic[0].uuid
-//                 dispatch(saveConnectionData(tempState))
-//               }, (error) => {
-
-//               });
-//       }
-//   });
-// }
-//
