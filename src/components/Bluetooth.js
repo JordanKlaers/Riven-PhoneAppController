@@ -23,7 +23,7 @@ import {
   saveConnectionData,
   scanInProgress
 } from '../actions'
-import upRight from '../style/bluetooth/upright.js'
+
 
 const backgroundImage = require('../../image/bluetooth.jpg');
 
@@ -82,12 +82,11 @@ class Bluetooth extends Component {
   }
 
   componentDidUpdate(state){
-
   }
 
   componentWillReceiveProps(nextState){
-    console.log("NEXT all saved devices: ", nextState.bluetooth.allSavedDevices);
-    console.log("PREVIOUS all saved devices: ", this.state.allSavedDevices);
+
+    console.log("device obecjt?: ", nextState.bluetooth.deviceObject);
     if(nextState.bluetooth.allSavedDevices != this.state.allSavedDevices){
       var temp = Object.assign({}, this.state, {
         allSavedDevices: nextState.bluetooth.allSavedDevices
@@ -101,7 +100,6 @@ class Bluetooth extends Component {
         defaultDevice: nextState.bluetooth.defaultDevice
       })
       if(!this.state.allSavedDevices.includes(nextState.bluetooth.defaultDevice) && nextState.bluetooth.defaultDevice != ""){
-        console.log("messy stuff");
         temp.allSavedDevices.push(nextState.bluetooth.defaultDevice)
       }
       console.log(nextState.bluetooth.defaultDevice, ": should be the current default device");
@@ -167,7 +165,6 @@ class Bluetooth extends Component {
   tryToConnect = (deviceName, connectedToDevice, manager)=>{
     var deviceConnectionInfo = {};
     if(connectedToDevice == "No connection"){
-      console.log("connceted to device was -no connection");
       manager.startDeviceScan(null, null, (error, device) => {
         if(connectedToDevice != "In Progress"){
           this.state.dispatch(scanInProgress())
@@ -180,10 +177,11 @@ class Bluetooth extends Component {
           return
         }
         if (device.name == this.state.defaultDevice) {  //should be 'raspberrypi'
-        console.log("the scan matched default device name");
+          var deviceObject = {};
           manager.stopDeviceScan();
           manager.connectToDevice(device.id)
           .then((device) => {
+            deviceObject = device;
             deviceConnectionInfo.device = device;
             return device.discoverAllServicesAndCharacteristics();
           })
@@ -192,12 +190,20 @@ class Bluetooth extends Component {
             return manager.servicesForDevice(device.id)
           })
           .then((services) => {
-            deviceConnectionInfo.writeServiceUUID = services[2].uuid
+            console.log("Services: ", services);
+            var service;
+            for(let i=0; i<services.length; i++) {
+              if(services[i].uuid == "ffffffff-ffff-ffff-ffff-fffffffffff0"){
+                service = services[i].uuid
+                console.log("got it:", service);
+              }
+            }
+            deviceConnectionInfo.writeServiceUUID = service
             return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
           })
           .then((characteristic)=> {
             deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-            this.state.dispatch(saveConnectionData(deviceConnectionInfo))
+            this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
             // var temp = Object.assign({}, this.state, {
             //   connectedToDevice: "Connected"
             // })
@@ -210,6 +216,10 @@ class Bluetooth extends Component {
       });
     }
 
+  }
+
+  stopScan = () => {
+    this.state.manager.stopDeviceScan();
   }
 
 
@@ -329,9 +339,11 @@ class Bluetooth extends Component {
                     </Text>
                   </View>
                   <View style={style.upRight.right}>
-                    <Text style={style.upRight.bluetoothText}>
-                      {this.state.connectedToDevice}
-                    </Text>
+                    <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.stopScan()}}>
+                      <Text style={style.upRight.bluetoothText}>
+                        {this.state.connectedToDevice}
+                      </Text>
+                    </TouchableHighlight>
                   </View>
                 </View>
 
@@ -422,9 +434,11 @@ class Bluetooth extends Component {
                     </Text>
                   </View>
                   <View style={style.upRight.right}>
-                    <Text style={style.upRight.bluetoothText}>
-                      {this.state.connectedToDevice}
-                    </Text>
+                    <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.stopScan()}}>
+                      <Text style={style.upRight.bluetoothText}>
+                        {this.state.connectedToDevice}
+                      </Text>
+                    </TouchableHighlight>
                   </View>
                 </View>
 

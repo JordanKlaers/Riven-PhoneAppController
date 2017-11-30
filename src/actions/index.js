@@ -4,10 +4,11 @@ export const customAction = () => {
   }
 }
 
-export const saveConnectionData = (connectionData) => {
+export const saveConnectionData = (connectionData, deviceObject) => {
   return {
     type: 'Save Connection Data',
-    connectionData
+    connectionData,
+    deviceObject
   }
 }
 

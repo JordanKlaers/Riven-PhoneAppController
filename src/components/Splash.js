@@ -32,13 +32,14 @@ class Splash extends Component {
     super(props)
     this.state = {                      //should be just the ones that i need to worry about changing
       localRedirectBool: true,
-      manager: this.props.bluetooth.manager,
-      currentBluetoothState: this.props.bluetooth.subscription || null,
-      deviceName: this.props.bluetooth.defaultDevice || "",  //currentDeviceName
-      dispatch: this.props.navigation.dispatch,
+      manager: props.bluetooth.manager,
+      currentBluetoothState: props.bluetooth.subscription || null,
+      defaultDevice: props.bluetooth.defaultDevice,
+      dispatch: props.navigation.dispatch,
       initiatedSetTimeout: false,
       connectedToDevice: props.bluetooth.connectedToDevice,
-      dimensions: {}
+      dimensions: {},
+      haveTriedToConnect: false
     }
   }
 
@@ -48,8 +49,8 @@ componentDidMount(){
 
 
   componentWillMount(){
-    console.log("WTF");
-    console.log(Dimensions.get("window"));
+
+
     this.state.manager.onStateChange((state) => {
       if (state === 'PoweredOn') {
         if(this.state.currentBluetoothState == false || this.state.currentBluetoothState == null){
@@ -66,7 +67,7 @@ componentDidMount(){
     }, true);
 
     AsyncStorage.getAllKeys().then((value)=>{
-      console.log(value);
+
       this.state.dispatch(loadDeviceNamesFromStorage(value))
       if(value.includes('defaultDevice')){
         AsyncStorage.getItem("defaultDevice").then((name)=>{
@@ -75,26 +76,22 @@ componentDidMount(){
           }
         })
       }
-      // else{
-      //   if(this.deviceNameFromStorage != "noSavedDeviceName"){   //currentDeviceName
-      //     this.state.dispatch(saveDeviceNameFROMStorage({name:"noSavedDeviceName"}))   //currentDeviceName
-      //   }
-      // }
       }).catch((err)=>{
 
       })
+
   }
 
   componentDidUpdate(state){
     var redirectBool = this.state.localRedirectBool
     var connectedToDevice = this.state.connectedToDevice
-    var deviceName = this.state.deviceName
-    var bluetoothON_OFF = state.bluetooth.bluetoothON_OFF
-    var manager = state.bluetooth.manager
+    var defaultDevice = this.state.defaultDevice
+    var bluetoothON_OFF = this.state.bluetoothON_OFF
+    var manager = this.state.manager
 
     if(redirectBool){ //are we still on splash page
-      if(connectedToDevice == "Connected"){  //are we connected to the device
 
+      if(connectedToDevice == "Connected"){  //are we connected to the device
 
         if(this.state.initiatedSetTimeout == false){
 
@@ -102,7 +99,6 @@ componentDidMount(){
             initiatedSetTimeout: true
           });
           this.setState(tempState, ()=>{
-
             setTimeout(()=>{
               {this.state.dispatch({
                 type: 'Redirect Is Triggered',
@@ -120,17 +116,24 @@ componentDidMount(){
 
       }
       else {
-        if(deviceName != null && bluetoothON_OFF != null && deviceName !=  "" && bluetoothON_OFF != false){ // if we have a device name and bluetooth is on try to connect
-          this.tryToConnect(deviceName, connectedToDevice, manager)
+
+
+        if (bluetoothON_OFF != null && defaultDevice !=  "" && bluetoothON_OFF != false && defaultDevice !=  undefined){ // if we have a device name and bluetooth is on try to connect
+          if(!this.state.haveTriedToConnect){
+            this.setState(Object.assign({}, this.state, {
+              haveTriedToConnect: true
+            }), this.tryToConnect(defaultDevice, connectedToDevice, manager))
+          }
+
         }
-        else if((deviceName ==  "" && bluetoothON_OFF != null) || (deviceName != null && bluetoothON_OFF == false)){
-          if(this.state.initiatedSetTimeout == false){
+        else if((defaultDevice ==  "" && bluetoothON_OFF != null) || (defaultDevice != null && bluetoothON_OFF == false)){
+
+          if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
 
             var tempState = Object.assign({}, this.state, {
               initiatedSetTimeout: true
             });
             this.setState(tempState, ()=>{
-
               setTimeout(()=>{
                 {this.state.dispatch({
                   type: 'Redirect Is Triggered',
@@ -139,32 +142,24 @@ componentDidMount(){
                   }))
                 })}
               },2000);
-
             })
           }
-
-
         }
-
       }
     }
-    else {
-      // console.log("if I see this - we have already redirected but splash is getting updated");
-    }
-
   }
 
   componentWillReceiveProps(nextState){
-    if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
+    // if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
+    //
+    //   this.setState({localRedirectBool: nextState.bluetooth.shouldRedirect})
+    // }
 
-      this.setState({localRedirectBool: nextState.bluetooth.shouldRedirect})
-    }
-
-    if(nextState.bluetooth.deviceNameFromStorage != this.state.deviceName){   //currentDeviceName
+    if(nextState.bluetooth.deviceNameFromStorage != this.state.defaultDevice){   //currentDeviceName
 
 
       var tempState = Object.assign({}, this.state, {
-        deviceName: nextState.bluetooth.deviceNameFromStorage    //currentDeviceName
+        defaultDevice: nextState.bluetooth.defaultDevice    //currentDeviceName
       });
       this.setState(tempState)
     }
@@ -187,39 +182,71 @@ componentDidMount(){
   }
 
 
-  tryToConnect = (deviceName, connectedToDevice, manager)=>{
-    var deviceConnectionInfo = {};
-    manager.startDeviceScan(null, null, (error, device) => {
-      if(connectedToDevice != "In Progress"){
-        this.state.dispatch(scanInProgress())
-      }
-      if (error) {
-        return
-      }
-      if (deviceName === this.state.deviceName) {  //should be 'raspberrypi'
-        manager.stopDeviceScan();
-        manager.connectToDevice(device.id)
-        .then((device) => {
-          deviceConnectionInfo.device = device;
-          return device.discoverAllServicesAndCharacteristics();
-        })
-        .then((device) => {
-          deviceConnectionInfo.deviceID = device.id
-          return manager.servicesForDevice(device.id)
-        })
-        .then((services) => {
-          deviceConnectionInfo.writeServiceUUID = services[2].uuid
-          return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-        })
-        .then((characteristic)=> {
-          deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-          this.state.dispatch(saveConnectionData(deviceConnectionInfo))
-        },
-        (error) => {
+  tryToConnect = (defaultDevice, connectedToDevice, manager)=>{
 
-        });
-      }
-    });
+    var deviceConnectionInfo = {};
+    if(connectedToDevice == "No connection"){
+      manager.startDeviceScan(null, null, (error, device) => {
+        if(connectedToDevice != "In Progress"){
+          this.state.dispatch(scanInProgress())
+          var temp = Object.assign({}, this.state, {
+            connectedToDevice: "In Progress"
+          })
+          this.setState(temp, this.forceUpdate())
+        }
+        if (error) {
+          return
+        }
+        //device.name == this.state.defaultDevice
+        if (device.name == defaultDevice) {  //should be 'raspberrypi'
+
+        console.log("device names matched");
+
+          var deviceObject = {};
+          manager.stopDeviceScan();
+          manager.connectToDevice(device.id)
+          .then((device) => {
+
+            deviceObject = device;
+            deviceConnectionInfo.device = device;
+            return device.discoverAllServicesAndCharacteristics();
+          })
+          .then((device) => {
+
+            deviceConnectionInfo.deviceID = device.id
+            return manager.servicesForDevice(device.id)
+          })
+          .then((services) => {
+            console.log("all services: ", services);
+            var service = null;
+            for(let i=0; i<services.length; i++) {
+              if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
+                console.log("1:", services[i].uuid);
+                service = services[i].uuid
+
+              }
+            }
+            deviceConnectionInfo.writeServiceUUID = service
+            return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+          })
+          .then((characteristic)=> {
+            console.log("characteristics : ", characteristic);
+            if (characteristic[0]) {
+              deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+              this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
+            }
+            else {
+              console.log("wasnt good");
+            }
+
+
+          },
+          (error) => {
+
+          });
+        }
+      });
+    }
   }
 
   //
@@ -232,20 +259,22 @@ componentDidMount(){
   render() {
     return (
       <View>
-        <Text style={{margin: '40%'}}>{this.state.status}</Text>
-        <Button onPress={()=>{
-          {this.state.dispatch({
-            type: 'Redirect Is Triggered',
-            action: this.state.dispatch(NavigationActions.navigate({
-              routeName: 'bluetooth'
-            }))
-          })}
-        }} title="dispatch button"  />
+        <Text style={{margin: '40%'}}>{this.state.connectedToDevice}</Text>
+
       </View>
     );
   }
+
 }
 
+// {/* <Button onPress={()=>{
+//   {this.state.dispatch({
+//     type: 'Redirect Is Triggered',
+//     action: this.state.dispatch(NavigationActions.navigate({
+//       routeName: 'bluetooth'
+//     }))
+//   })}
+// }} title="dispatch button"  /> */}
 
 Splash.propTypes = {
   dispatch: PropTypes.func.isRequired,

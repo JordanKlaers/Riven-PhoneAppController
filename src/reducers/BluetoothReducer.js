@@ -8,18 +8,20 @@ import { BleManager } from 'react-native-ble-plx';
       var bluetooth = {
         manager: manager,
         bluetoothON_OFF: bluetoothSubscription,
-        defaultDevice: null,           //currentDeviceName
+        defaultDevice: "",           //currentDeviceName
         connectedToDevice: "No connection",         //false in progress or true for connected
         shouldRedirect: true,
         allSavedDevices: [],         //the key == the device name for all
+        deviceObject: {}
       }
 
   function BluetoothReducer(state= bluetooth, action) {
     switch (action.type) {
       case 'Save Connection Data':
-
+        state.deviceObject = action.deviceObject
         state.connectedToDevice = "Connected";                    //need to save so we can send data to the service
         return { ...state, ...action.connectionData };
+
       case 'Save Bluetooth State':
 
         state.bluetoothON_OFF = action.state
@@ -36,6 +38,7 @@ import { BleManager } from 'react-native-ble-plx';
         });
         return result
       case 'Load Default Device From Storage':
+      console.log("loading from Storage: ", action.name);
         var result = Object.assign({}, state, {
           defaultDevice: action.name
         });
