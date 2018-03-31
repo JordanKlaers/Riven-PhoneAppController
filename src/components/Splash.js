@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
-import { NavigationActions, } from 'react-navigation';
+import { NavigationActions } from 'react-navigation';
 import {
   saveConnectionData,
   saveBluetoothState,
@@ -12,10 +12,11 @@ import {
   scanInProgress,
   connected,
   triggered,
-  loadDeviceNamesFromStorage,
-  loadDefaultDeviceFromStorage
+  getSavedDeviceNames,
+  setSelectedDevice
 } from '../actions'
 import { AsyncStorage } from 'react-native';
+import SplashUtil from '../util/SplahUtil.js';
 
 const styles = StyleSheet.create({
   welcome: {
@@ -30,7 +31,9 @@ class Splash extends Component {
 
   constructor(props) {
     super(props)
+    this.setState = this.setState.bind(this);
     this.state = {                      //should be just the ones that i need to worry about changing
+      autoConnectStatus: 'idk',
       localRedirectBool: true,
       manager: props.bluetooth.manager,
       currentBluetoothState: props.bluetooth.subscription || null,
@@ -41,6 +44,8 @@ class Splash extends Component {
       dimensions: {},
       haveTriedToConnect: false
     }
+    this.dispatch = props.navigation.dispatch.bind(this);
+    
   }
 
 componentDidMount(){
@@ -49,36 +54,8 @@ componentDidMount(){
 
 
   componentWillMount(){
-
-
-    this.state.manager.onStateChange((state) => {
-      if (state === 'PoweredOn') {
-        if(this.state.currentBluetoothState == false || this.state.currentBluetoothState == null){
-          this.state.currentBluetoothState = true;
-          this.state.dispatch(saveBluetoothState(this.state.currentBluetoothState))
-        }
-      }
-      else {
-        if(this.state.currentBluetoothState == true || this.state.currentBluetoothState == null){
-          this.state.currentBluetoothState = false;
-          this.state.dispatch(saveBluetoothState(this.state.currentBluetoothState))
-        }
-      }
-    }, true);
-
-    AsyncStorage.getAllKeys().then((value)=>{
-
-      this.state.dispatch(loadDeviceNamesFromStorage(value))
-      if(value.includes('defaultDevice')){
-        AsyncStorage.getItem("defaultDevice").then((name)=>{
-          if(this.state.defaultDevice != name){  //currentDeviceName
-            this.state.dispatch(loadDefaultDeviceFromStorage(name))  //currentDeviceName
-          }
-        })
-      }
-      }).catch((err)=>{
-
-      })
+    SplashUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
+    SplashUtil.loadDeviceNamesFromStorage(AsyncStorage, this.state.dispatch, this.state.defaultDevice, getSavedDeviceNames, setSelectedDevice)
 
   }
 
@@ -86,9 +63,23 @@ componentDidMount(){
     var redirectBool = this.state.localRedirectBool
     var connectedToDevice = this.state.connectedToDevice
     var defaultDevice = this.state.defaultDevice
-    var bluetoothON_OFF = this.state.bluetoothON_OFF
+    var deviceBluetoothstate = this.state.deviceBluetoothstate
     var manager = this.state.manager
+    var haveTriedToConnect = this.state.haveTriedToConnect
+    var initializedRedirect = this.state.initiatedSetTimeout;
+    var dispatch = this.dispatch
+    var navigate = NavigationActions.navigate
+    var setState = this.setState
 
+
+    // var autoConnectStatus = SplashUtil.autoConnect(redirectBool, connectedToDevice, deviceBluetoothstate, defaultDevice, haveTriedToConnect, this.tryToConnect, initializedRedirect, dispatch, navigate, manager, this.setState, this.state);
+    // var tempState = Object.assign({}, this.state, {
+    //   autoConnectStatus: autoConnectStatus
+    // });
+    // if (this.state.autoConnectStatus == 'idk') {
+    //   this.setState(tempState);
+    // }
+    
     if(redirectBool){ //are we still on splash page
 
       if(connectedToDevice == "Connected"){  //are we connected to the device
@@ -118,7 +109,7 @@ componentDidMount(){
       else {
 
 
-        if (bluetoothON_OFF != null && defaultDevice !=  "" && bluetoothON_OFF != false && defaultDevice !=  undefined){ // if we have a device name and bluetooth is on try to connect
+        if (deviceBluetoothstate != null && defaultDevice !=  "" && deviceBluetoothstate != false && defaultDevice !=  undefined){ // if we have a device name and bluetooth is on try to connect
           if(!this.state.haveTriedToConnect){
             this.setState(Object.assign({}, this.state, {
               haveTriedToConnect: true
@@ -126,7 +117,7 @@ componentDidMount(){
           }
 
         }
-        else if((defaultDevice ==  "" && bluetoothON_OFF != null) || (defaultDevice != null && bluetoothON_OFF == false)){
+        else if((defaultDevice ==  "" && deviceBluetoothstate != null) || (defaultDevice != null && deviceBluetoothstate == false)){
 
           if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
 
@@ -163,10 +154,10 @@ componentDidMount(){
       });
       this.setState(tempState)
     }
-    if(nextState.bluetooth.bluetoothON_OFF != this.state.bluetoothON_OFF){
+    if(nextState.bluetooth.deviceBluetoothstate != this.state.deviceBluetoothstate){
 
       var tempState = Object.assign({}, this.state, {
-        bluetoothON_OFF: nextState.bluetooth.bluetoothON_OFF
+        deviceBluetoothstate: nextState.bluetooth.deviceBluetoothstate
       });
       this.setState(tempState)
     }
@@ -260,7 +251,7 @@ componentDidMount(){
     return (
       <View>
         <Text style={{margin: '40%'}}>{this.state.connectedToDevice}</Text>
-
+        <Text>{this.state.autoConnectStatus}</Text>
       </View>
     );
   }
