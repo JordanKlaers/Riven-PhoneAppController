@@ -7,7 +7,7 @@ import { BleManager } from 'react-native-ble-plx';
       var bluetoothSubscription = null;
       var bluetooth = {
         manager: manager,
-        bluetoothON_OFF: bluetoothSubscription,
+        deviceBluetoothstate: bluetoothSubscription,
         defaultDevice: "",           //currentDeviceName
         connectedToDevice: "No connection",         //false in progress or true for connected
         shouldRedirect: true,
@@ -24,7 +24,7 @@ import { BleManager } from 'react-native-ble-plx';
 
       case 'Save Bluetooth State':
 
-        state.bluetoothON_OFF = action.state
+        state.deviceBluetoothstate = action.state
         return { ...state };
       case 'Save Device Name From Storage':
 

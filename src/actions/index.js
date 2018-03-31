@@ -26,7 +26,7 @@ export const saveDeviceNameFROMStorage = (deviceName) => { //replaced by the one
   }
 }
 
-export const loadDeviceNamesFromStorage = ( devices ) =>{
+export const getSavedDeviceNames = ( devices ) =>{
   return {
     type: 'Load Device Names From Storage',
     devices
@@ -56,7 +56,7 @@ export const redirectForBluetoothConnection = (state) => {
   }
 }
 
-export const loadDefaultDeviceFromStorage = (name) => {
+export const setSelectedDevice = (name) => {
   return {
     type: 'Load Default Device From Storage',
     name

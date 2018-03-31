@@ -53,7 +53,7 @@ class Bluetooth extends Component {
         height: 0,
         width: 0
       },                     //should be just the ones that i need to worry about changing
-      bluetoothON_OFF: props.bluetooth.bluetoothON_OFF,
+      deviceBluetoothstate: props.bluetooth.deviceBluetoothstate,
       connectedToDevice: props.bluetooth.connectedToDevice,
       textInput: "",
       allSavedDevices: [],
@@ -327,7 +327,7 @@ class Bluetooth extends Component {
                   </View>
                   <View style={style.upRight.right}>
                     <Text style={style.upRight.bluetoothText}>
-                      {this.state.bluetoothON_OFF ? "On" : "Off"}
+                      {this.state.deviceBluetoothstate ? "On" : "Off"}
                     </Text>
                   </View>
                 </View>
@@ -422,7 +422,7 @@ class Bluetooth extends Component {
                   </View>
                   <View style={style.upRight.right}>
                     <Text style={style.upRight.bluetoothText}>
-                      {this.state.bluetoothON_OFF ? "On" : "Off"}
+                      {this.state.deviceBluetoothstate ? "On" : "Off"}
                     </Text>
                   </View>
                 </View>

@@ -1,3 +1,5 @@
+import { NavigationActions } from 'react-navigation';
+
 function bluetoothListener(manager, state, bluetoothState, dispatch, saveBluetoothState) {
     manager.onStateChange((deviceBluetoothstate) => {
         if (deviceBluetoothstate === 'PoweredOn') {
@@ -30,42 +32,47 @@ function loadDeviceNamesFromStorage(deviceStorage, dispatch, defaultDevice, getS
       })
 }
 
-function autoConnect(onSpalshPage, externalDeviceConnectionStatus, deviceBluetoothstate, defaultDevice, haveTriedToConnect, tryToConnect, initializedRedirect, dispatch, navigate, manager, setState) {
+function autoConnect(onSpalshPage, externalDeviceConnectionStatus, deviceBluetoothstate, defaultDevice, haveTriedToConnect, tryToConnect, initializedRedirect, dispatch, navigate, manager, setState, state) {
     if (onSpalshPage) {
         if (deviceBluetoothstate == 'connected' && initializedRedirect == false) {
-            var tempState = Object.assign({}, this.state, {
-                initializedRedirect: true
-            });
-            setState(tempState, ()=>{
-                setTimeout(()=>{
-                  {dispatch({
-                    type: 'Redirect Is Triggered',
-                    action: dispatch(navigate({
-                      routeName: 'controller'
-                    }))
-                  })}
-                },2000);
-              })
+            return 'redirect';
+            // var tempState = Object.assign({}, state, {
+            //     initializedRedirect: true
+            // });
+            // setState(tempState, ()=>{
+            //     setTimeout(()=>{
+            //       {dispatch({
+            //         type: 'Redirect Is Triggered',
+            //         action: dispatch(NavigationActions.navigate({
+            //           routeName: 'controller'
+            //         }))
+            //       })}
+            //     },2000);
+            //   })
         }
         else {
+            // return defaultDevice.toString();
             const haveDefaultDevice_BluetoothIsOn = (deviceBluetoothstate != null && defaultDevice !=  "" && deviceBluetoothstate != false && defaultDevice !=  undefined);
             const noName_BluetoothOff = (deviceBluetoothstate == false || defaultDevice == null)
             if (haveDefaultDevice_BluetoothIsOn) {
+                return 'bluetooth is on, and we have a  name';
                 if (!haveTriedToConnect) {
-                    setState(Object.assign({}, this.state, {
-                        haveTriedToConnect: true
-                    }), tryToConnect(defaultDevice, externalDeviceConnectionStatus, manager))
+                    return 'tryToConnect'
+                    // setState(Object.assign({}, state, {
+                    //     haveTriedToConnect: true
+                    // }), tryToConnect(defaultDevice, externalDeviceConnectionStatus, manager))
                 }
             }
             else if (noName_BluetoothOff){
-                var tempState = Object.assign({}, this.state, {
+                // return 'noName_BluetoothOff';
+                var tempState = Object.assign({}, state, {
                     initiatedSetTimeout: true
                 });
                 setState(tempState, ()=>{
                     setTimeout(()=>{
                       {dispatch({
                         type: 'Redirect Is Triggered',
-                        action: dispatch(navigate({
+                        action: dispatch(NavigationActions.navigate({
                           routeName: 'bluetooth'
                         }))
                       })}
@@ -74,6 +81,7 @@ function autoConnect(onSpalshPage, externalDeviceConnectionStatus, deviceBluetoo
             }
         }
     }
+    return "none"
 }
 
 export default {
