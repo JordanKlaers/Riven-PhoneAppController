@@ -34,56 +34,71 @@ function loadDeviceNamesFromStorage(deviceStorage, dispatch, defaultDevice, getS
       })
 }
 
-function autoConnect(onSpalshPage, externalDeviceConnectionStatus, deviceBluetoothstate, defaultDevice, haveTriedToConnect, tryToConnect, initializedRedirect, dispatch, navigate, manager, setState, state) {
-    if (onSpalshPage) {
-        if (deviceBluetoothstate == 'connected' && initializedRedirect == false) {
-            return 'redirect';
-            // var tempState = Object.assign({}, state, {
-            //     initializedRedirect: true
-            // });
-            // setState(tempState, ()=>{
-            //     setTimeout(()=>{
-            //       {dispatch({
-            //         type: 'Redirect Is Triggered',
-            //         action: dispatch(NavigationActions.navigate({
-            //           routeName: 'controller'
-            //         }))
-            //       })}
-            //     },2000);
-            //   })
+function autoConnect(args) {
+    if(args.redirectBool){ //are we still on splash page
+        if ((args.deviceBluetoothstate == false || args.defaultDevice == 'NULL') && !args.initializedRedirect) {
+          var tempState = Object.assign({}, args.state, {
+            initiatedSetTimeout: true
+          });
+          args.setState(tempState, ()=>{
+            setTimeout(()=>{
+              {args.dispatch({
+                type: 'Redirect Is Triggered',
+                action: args.dispatch(args.navigate({
+                  routeName: 'bluetooth'
+                }))
+              })}
+            },10);
+          })
+        }
+        // else if(deviceBluetoothstate && (defaultDevice != '' || defaultDevice != 'NULL') && (connectedToDevice != "Connected")){
+  
+        // } 
+        else if(args.connectedToDevice == "Connected"){  //are we connected to the device
+          if(args.initiatedSetTimeout == false){
+            var tempState = Object.assign({}, args.state, {
+              initiatedSetTimeout: true
+            });
+            args.setState(tempState, ()=>{
+              setTimeout(()=>{
+                {args.dispatch({
+                  type: 'Redirect Is Triggered',
+                  action: args.dispatch(args.navigate({
+                    routeName: 'controller'
+                  }))
+                })}
+              },100);
+            })
+          }
         }
         else {
-            // return defaultDevice.toString();
-            const haveDefaultDevice_BluetoothIsOn = (deviceBluetoothstate != null && defaultDevice !=  "" && deviceBluetoothstate != false && defaultDevice !=  undefined);
-            const noName_BluetoothOff = (deviceBluetoothstate == false || defaultDevice == null)
-            if (haveDefaultDevice_BluetoothIsOn) {
-                return 'bluetooth is on, and we have a  name';
-                if (!haveTriedToConnect) {
-                    return 'tryToConnect'
-                    // setState(Object.assign({}, state, {
-                    //     haveTriedToConnect: true
-                    // }), tryToConnect(defaultDevice, externalDeviceConnectionStatus, manager))
-                }
+          //not connected 
+          if (args.deviceBluetoothstate && (args.defaultDevice !=  "" && args.defaultDevice != 'NULL')){ // if we have a device name and bluetooth is on try to connect
+            if(!args.haveTriedToConnect){
+                args.setState(Object.assign({}, this.state, {
+                haveTriedToConnect: true
+              }), args.tryToConnect(args.defaultDevice, args.connectedToDevice, args.manager))
             }
-            else if (noName_BluetoothOff){
-                // return 'noName_BluetoothOff';
-                var tempState = Object.assign({}, state, {
-                    initiatedSetTimeout: true
+            else {
+              if(args.initializedRedirect == false && args.connectedToDevice != "In progress"){
+                var tempState = Object.assign({}, this.state, {
+                  initiatedSetTimeout: true
                 });
-                setState(tempState, ()=>{
-                    setTimeout(()=>{
-                      {dispatch({
-                        type: 'Redirect Is Triggered',
-                        action: dispatch(NavigationActions.navigate({
-                          routeName: 'bluetooth'
-                        }))
-                      })}
-                    },2000);
+                args.setState(tempState, ()=>{
+                  setTimeout(()=>{
+                    {args.dispatch({
+                      type: 'Redirect Is Triggered',
+                      action: args.dispatch(args.navigate({
+                        routeName: 'bluetooth'
+                      }))
+                    })}
+                  },2000);
                 })
+              }
             }
+          }
         }
-    }
-    return "none"
+      }
 }
 
 export default {

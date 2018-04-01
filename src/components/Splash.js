@@ -72,83 +72,91 @@ componentDidMount(){
     var dispatch = this.dispatch
     var navigate = NavigationActions.navigate
     var setState = this.setState
-
     
-
-    if(redirectBool){ //are we still on splash page
-      if ((deviceBluetoothstate == false || defaultDevice == 'NULL') && !initializedRedirect) {
-        var tempState = Object.assign({}, this.state, {
-          initiatedSetTimeout: true
-        });
-        this.setState(tempState, ()=>{
-          setTimeout(()=>{
-            {this.state.dispatch({
-              type: 'Redirect Is Triggered',
-              action: this.state.dispatch(NavigationActions.navigate({
-                routeName: 'bluetooth'
-              }))
-            })}
-          },10);
-        })
-      }
-      // else if(deviceBluetoothstate && (defaultDevice != '' || defaultDevice != 'NULL') && (connectedToDevice != "Connected")){
-
-      // } 
-      else if(connectedToDevice == "Connected"){  //are we connected to the device
-        if(this.state.initiatedSetTimeout == false){
-          var tempState = Object.assign({}, this.state, {
-            initiatedSetTimeout: true
-          });
-          this.setState(tempState, ()=>{
-            setTimeout(()=>{
-              {this.state.dispatch({
-                type: 'Redirect Is Triggered',
-                action: this.state.dispatch(NavigationActions.navigate({
-                  routeName: 'controller'
-                }))
-              })}
-            },100);
-          })
-        }
-      }
-      else {
-        //not connected 
-        if (deviceBluetoothstate && (defaultDevice !=  "" && defaultDevice != 'NULL')){ // if we have a device name and bluetooth is on try to connect
-          if(!this.state.haveTriedToConnect){
-            this.setState(Object.assign({}, this.state, {
-              haveTriedToConnect: true
-            }), this.tryToConnect(defaultDevice, connectedToDevice, manager))
-          }
-          else {
-            if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
-              var tempState = Object.assign({}, this.state, {
-                initiatedSetTimeout: true
-              });
-              this.setState(tempState, ()=>{
-                setTimeout(()=>{
-                  {this.state.dispatch({
-                    type: 'Redirect Is Triggered',
-                    action: this.state.dispatch(NavigationActions.navigate({
-                      routeName: 'bluetooth'
-                    }))
-                  })}
-                },2000);
-              })
-            }
-          }
-        }
-      }
+    var args ={
+      redirectBool: redirectBool,
+      deviceBluetoothstate: deviceBluetoothstate,
+      defaultDevice: defaultDevice,
+      initializedRedirect: initializedRedirect,
+      setState: this.setState,
+      dispatch: this.state.dispatch,
+      navigate: NavigationActions.navigate,
+      connectedToDevice: connectedToDevice,
+      haveTriedToConnect: this.state.haveTriedToConnect,
+      tryToConnect: this.tryToConnect,
+      manager: manager,
+      state: this.state
     }
-  }
-        // else if(((defaultDevice ==  "" || defaultDevice == 'NULL' ) && deviceBluetoothstate != null) || (defaultDevice != null && deviceBluetoothstate == false)){
 
-        //   if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
+    SplashUtil.autoConnect(args);
+    
+    // if(redirectBool){ //are we still on splash page
+    //   if ((deviceBluetoothstate == false || defaultDevice == 'NULL') && !initializedRedirect) {
+    //     var tempState = Object.assign({}, this.state, {
+    //       initiatedSetTimeout: true
+    //     });
+    //     this.setState(tempState, ()=>{
+    //       setTimeout(()=>{
+    //         {this.state.dispatch({
+    //           type: 'Redirect Is Triggered',
+    //           action: this.state.dispatch(NavigationActions.navigate({
+    //             routeName: 'bluetooth'
+    //           }))
+    //         })}
+    //       },10);
+    //     })
+    //   }
+    //   // else if(deviceBluetoothstate && (defaultDevice != '' || defaultDevice != 'NULL') && (connectedToDevice != "Connected")){
+
+    //   // } 
+    //   else if(connectedToDevice == "Connected"){  //are we connected to the device
+    //     if(initializedRedirect == false){
+    //       var tempState = Object.assign({}, this.state, {
+    //         initiatedSetTimeout: true
+    //       });
+    //       this.setState(tempState, ()=>{
+    //         setTimeout(()=>{
+    //           {this.state.dispatch({
+    //             type: 'Redirect Is Triggered',
+    //             action: this.state.dispatch(NavigationActions.navigate({
+    //               routeName: 'controller'
+    //             }))
+    //           })}
+    //         },100);
+    //       })
+    //     }
+    //   }
+    //   else {
+    //     //not connected 
+    //     if (deviceBluetoothstate && (defaultDevice !=  "" && defaultDevice != 'NULL')){ // if we have a device name and bluetooth is on try to connect
+    //       if(!this.state.haveTriedToConnect){
+    //         this.setState(Object.assign({}, this.state, {
+    //           haveTriedToConnect: true
+    //         }), this.tryToConnect(defaultDevice, connectedToDevice, manager))
+    //       }
+    //       else {
+    //         if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
+    //           var tempState = Object.assign({}, this.state, {
+    //             initiatedSetTimeout: true
+    //           });
+    //           this.setState(tempState, ()=>{
+    //             setTimeout(()=>{
+    //               {this.state.dispatch({
+    //                 type: 'Redirect Is Triggered',
+    //                 action: this.state.dispatch(NavigationActions.navigate({
+    //                   routeName: 'bluetooth'
+    //                 }))
+    //               })}
+    //             },2000);
+    //           })
+    //         }
+    //       }
+    //     }
+    //   }
+    // }
+  }
 
   componentWillReceiveProps(nextState){
-    // if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
-    //
-    //   this.setState({localRedirectBool: nextState.bluetooth.shouldRedirect})
-    // }
 
     if(nextState.bluetooth.deviceNameFromStorage != this.state.defaultDevice){   //currentDeviceName
 
