@@ -22,9 +22,11 @@ function loadDeviceNamesFromStorage(deviceStorage, dispatch, defaultDevice, getS
         dispatch(getSavedDeviceNames(value))
         if(value.includes('defaultDevice')){
             deviceStorage.getItem("defaultDevice").then((name)=>{
-            if(defaultDevice != name){  //currentDeviceName
+            // if((defaultDevice != null) && defaultDevice != name){  //currentDeviceName
+            name = name || 'NULL';
               dispatch(setSelectedDevice(name))  //currentDeviceName
-            }
+            // }
+
           })
         }
       }).catch((err)=>{

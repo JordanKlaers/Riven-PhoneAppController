@@ -42,7 +42,9 @@ class Splash extends Component {
       initiatedSetTimeout: false,
       connectedToDevice: props.bluetooth.connectedToDevice,
       dimensions: {},
-      haveTriedToConnect: false
+      haveTriedToConnect: false,
+      alldevices: props.bluetooth.allSavedDevices,
+      scannedDeviceName: ''
     }
     this.dispatch = props.navigation.dispatch.bind(this);
     
@@ -71,21 +73,29 @@ componentDidMount(){
     var navigate = NavigationActions.navigate
     var setState = this.setState
 
-
-    // var autoConnectStatus = SplashUtil.autoConnect(redirectBool, connectedToDevice, deviceBluetoothstate, defaultDevice, haveTriedToConnect, this.tryToConnect, initializedRedirect, dispatch, navigate, manager, this.setState, this.state);
-    // var tempState = Object.assign({}, this.state, {
-    //   autoConnectStatus: autoConnectStatus
-    // });
-    // if (this.state.autoConnectStatus == 'idk') {
-    //   this.setState(tempState);
-    // }
     
+
     if(redirectBool){ //are we still on splash page
+      if ((deviceBluetoothstate == false || defaultDevice == 'NULL') && !initializedRedirect) {
+        var tempState = Object.assign({}, this.state, {
+          initiatedSetTimeout: true
+        });
+        this.setState(tempState, ()=>{
+          setTimeout(()=>{
+            {this.state.dispatch({
+              type: 'Redirect Is Triggered',
+              action: this.state.dispatch(NavigationActions.navigate({
+                routeName: 'bluetooth'
+              }))
+            })}
+          },10);
+        })
+      }
+      // else if(deviceBluetoothstate && (defaultDevice != '' || defaultDevice != 'NULL') && (connectedToDevice != "Connected")){
 
-      if(connectedToDevice == "Connected"){  //are we connected to the device
-
+      // } 
+      else if(connectedToDevice == "Connected"){  //are we connected to the device
         if(this.state.initiatedSetTimeout == false){
-
           var tempState = Object.assign({}, this.state, {
             initiatedSetTimeout: true
           });
@@ -97,48 +107,42 @@ componentDidMount(){
                   routeName: 'controller'
                 }))
               })}
-            },2000);
-
+            },100);
           })
         }
-
-
-
-
       }
       else {
-
-
-        if (deviceBluetoothstate != null && defaultDevice !=  "" && deviceBluetoothstate != false && defaultDevice !=  undefined){ // if we have a device name and bluetooth is on try to connect
+        //not connected 
+        if (deviceBluetoothstate && (defaultDevice !=  "" && defaultDevice != 'NULL')){ // if we have a device name and bluetooth is on try to connect
           if(!this.state.haveTriedToConnect){
             this.setState(Object.assign({}, this.state, {
               haveTriedToConnect: true
             }), this.tryToConnect(defaultDevice, connectedToDevice, manager))
           }
-
-        }
-        else if((defaultDevice ==  "" && deviceBluetoothstate != null) || (defaultDevice != null && deviceBluetoothstate == false)){
-
-          if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
-
-            var tempState = Object.assign({}, this.state, {
-              initiatedSetTimeout: true
-            });
-            this.setState(tempState, ()=>{
-              setTimeout(()=>{
-                {this.state.dispatch({
-                  type: 'Redirect Is Triggered',
-                  action: this.state.dispatch(NavigationActions.navigate({
-                    routeName: 'bluetooth'
-                  }))
-                })}
-              },2000);
-            })
+          else {
+            if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
+              var tempState = Object.assign({}, this.state, {
+                initiatedSetTimeout: true
+              });
+              this.setState(tempState, ()=>{
+                setTimeout(()=>{
+                  {this.state.dispatch({
+                    type: 'Redirect Is Triggered',
+                    action: this.state.dispatch(NavigationActions.navigate({
+                      routeName: 'bluetooth'
+                    }))
+                  })}
+                },2000);
+              })
+            }
           }
         }
       }
     }
   }
+        // else if(((defaultDevice ==  "" || defaultDevice == 'NULL' ) && deviceBluetoothstate != null) || (defaultDevice != null && deviceBluetoothstate == false)){
+
+        //   if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
 
   componentWillReceiveProps(nextState){
     // if(nextState.bluetooth.shouldRedirect != this.state.localRedirectBool){
@@ -147,7 +151,6 @@ componentDidMount(){
     // }
 
     if(nextState.bluetooth.deviceNameFromStorage != this.state.defaultDevice){   //currentDeviceName
-
 
       var tempState = Object.assign({}, this.state, {
         defaultDevice: nextState.bluetooth.defaultDevice    //currentDeviceName
@@ -176,7 +179,10 @@ componentDidMount(){
   tryToConnect = (defaultDevice, connectedToDevice, manager)=>{
 
     var deviceConnectionInfo = {};
-    if(connectedToDevice == "No connection"){
+    if(connectedToDevice != "Connected"){
+      // setTimeout(function() {
+      //   manager.stopDeviceScan();
+      // }, 3000)
       manager.startDeviceScan(null, null, (error, device) => {
         if(connectedToDevice != "In Progress"){
           this.state.dispatch(scanInProgress())
@@ -188,7 +194,13 @@ componentDidMount(){
         if (error) {
           return
         }
-        //device.name == this.state.defaultDevice
+        // if (device.name != '') {
+          var temp = Object.assign({}, this.state, {
+            scannedDeviceName: device.name
+          })
+          this.setState(temp, this.forceUpdate())
+        // }
+        
         if (device.name == defaultDevice) {  //should be 'raspberrypi'
 
         console.log("device names matched");
@@ -251,7 +263,7 @@ componentDidMount(){
     return (
       <View>
         <Text style={{margin: '40%'}}>{this.state.connectedToDevice}</Text>
-        <Text>{this.state.autoConnectStatus}</Text>
+        <Text>{this.state.scannedDeviceName}</Text>
       </View>
     );
   }

@@ -45,7 +45,7 @@ import { BleManager } from 'react-native-ble-plx';
         return result;
       case 'Set Default Device':
         var result = Object.assign({}, state,{
-          defaultDevice: action.name
+          defaultDevice: action.name 
         });
         return result
       case 'Save Device Name To Storage':
@@ -82,7 +82,7 @@ import { BleManager } from 'react-native-ble-plx';
           })
         });
         if(result.defaultDevice == action.deviceName){
-          result.defaultDevice = "";
+          result.defaultDevice = 'NULL';
           AsyncStorage.setItem('defaultDevice', "")
         }
         return result
