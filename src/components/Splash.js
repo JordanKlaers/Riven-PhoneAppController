@@ -33,7 +33,6 @@ class Splash extends Component {
     super(props)
     this.setState = this.setState.bind(this);
     this.state = {                      //should be just the ones that i need to worry about changing
-      autoConnectStatus: 'idk',
       localRedirectBool: true,
       manager: props.bluetooth.manager,
       currentBluetoothState: props.bluetooth.subscription || null,
@@ -43,17 +42,9 @@ class Splash extends Component {
       connectedToDevice: props.bluetooth.connectedToDevice,
       dimensions: {},
       haveTriedToConnect: false,
-      alldevices: props.bluetooth.allSavedDevices,
-      scannedDeviceName: ''
+      alldevices: props.bluetooth.allSavedDevices
     }
-    this.dispatch = props.navigation.dispatch.bind(this);
-    
   }
-
-componentDidMount(){
-
-}
-
 
   componentWillMount(){
     SplashUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
@@ -62,125 +53,28 @@ componentDidMount(){
   }
 
   componentDidUpdate(state){
-    var redirectBool = this.state.localRedirectBool
-    var connectedToDevice = this.state.connectedToDevice
-    var defaultDevice = this.state.defaultDevice
-    var deviceBluetoothstate = this.state.deviceBluetoothstate
-    var manager = this.state.manager
-    var haveTriedToConnect = this.state.haveTriedToConnect
-    var initializedRedirect = this.state.initiatedSetTimeout;
-    var dispatch = this.dispatch
-    var navigate = NavigationActions.navigate
-    var setState = this.setState
     
     var args ={
-      redirectBool: redirectBool,
-      deviceBluetoothstate: deviceBluetoothstate,
-      defaultDevice: defaultDevice,
-      initializedRedirect: initializedRedirect,
+      redirectBool: this.state.localRedirectBool,
+      deviceBluetoothstate: this.state.deviceBluetoothstate,
+      defaultDevice: this.state.defaultDevice,
+      initializedRedirect: this.state.initiatedSetTimeout,
       setState: this.setState,
       dispatch: this.state.dispatch,
       navigate: NavigationActions.navigate,
-      connectedToDevice: connectedToDevice,
+      connectedToDevice: this.state.connectedToDevice,
       haveTriedToConnect: this.state.haveTriedToConnect,
       tryToConnect: this.tryToConnect,
-      manager: manager,
-      state: this.state
+      manager: this.state.manager,
+      state: this.state,
+      scanInProgress: scanInProgress
     }
 
     SplashUtil.autoConnect(args);
-    
-    // if(redirectBool){ //are we still on splash page
-    //   if ((deviceBluetoothstate == false || defaultDevice == 'NULL') && !initializedRedirect) {
-    //     var tempState = Object.assign({}, this.state, {
-    //       initiatedSetTimeout: true
-    //     });
-    //     this.setState(tempState, ()=>{
-    //       setTimeout(()=>{
-    //         {this.state.dispatch({
-    //           type: 'Redirect Is Triggered',
-    //           action: this.state.dispatch(NavigationActions.navigate({
-    //             routeName: 'bluetooth'
-    //           }))
-    //         })}
-    //       },10);
-    //     })
-    //   }
-    //   // else if(deviceBluetoothstate && (defaultDevice != '' || defaultDevice != 'NULL') && (connectedToDevice != "Connected")){
-
-    //   // } 
-    //   else if(connectedToDevice == "Connected"){  //are we connected to the device
-    //     if(initializedRedirect == false){
-    //       var tempState = Object.assign({}, this.state, {
-    //         initiatedSetTimeout: true
-    //       });
-    //       this.setState(tempState, ()=>{
-    //         setTimeout(()=>{
-    //           {this.state.dispatch({
-    //             type: 'Redirect Is Triggered',
-    //             action: this.state.dispatch(NavigationActions.navigate({
-    //               routeName: 'controller'
-    //             }))
-    //           })}
-    //         },100);
-    //       })
-    //     }
-    //   }
-    //   else {
-    //     //not connected 
-    //     if (deviceBluetoothstate && (defaultDevice !=  "" && defaultDevice != 'NULL')){ // if we have a device name and bluetooth is on try to connect
-    //       if(!this.state.haveTriedToConnect){
-    //         this.setState(Object.assign({}, this.state, {
-    //           haveTriedToConnect: true
-    //         }), this.tryToConnect(defaultDevice, connectedToDevice, manager))
-    //       }
-    //       else {
-    //         if(this.state.initiatedSetTimeout == false && this.state.connectedToDevice != "In progress"){
-    //           var tempState = Object.assign({}, this.state, {
-    //             initiatedSetTimeout: true
-    //           });
-    //           this.setState(tempState, ()=>{
-    //             setTimeout(()=>{
-    //               {this.state.dispatch({
-    //                 type: 'Redirect Is Triggered',
-    //                 action: this.state.dispatch(NavigationActions.navigate({
-    //                   routeName: 'bluetooth'
-    //                 }))
-    //               })}
-    //             },2000);
-    //           })
-    //         }
-    //       }
-    //     }
-    //   }
-    // }
   }
 
   componentWillReceiveProps(nextState){
-
-    if(nextState.bluetooth.deviceNameFromStorage != this.state.defaultDevice){   //currentDeviceName
-
-      var tempState = Object.assign({}, this.state, {
-        defaultDevice: nextState.bluetooth.defaultDevice    //currentDeviceName
-      });
-      this.setState(tempState)
-    }
-    if(nextState.bluetooth.deviceBluetoothstate != this.state.deviceBluetoothstate){
-
-      var tempState = Object.assign({}, this.state, {
-        deviceBluetoothstate: nextState.bluetooth.deviceBluetoothstate
-      });
-      this.setState(tempState)
-    }
-
-    if(nextState.bluetooth.connectedToDevice != this.state.connectedToDevice){
-
-      var tempState = Object.assign({}, this.state, {
-        connectedToDevice: nextState.bluetooth.connectedToDevice
-      });
-      this.setState(tempState)
-    }
-
+    SplashUtil.pushUpdateState(nextState, this.state, this.setState);
   }
 
 
@@ -188,27 +82,17 @@ componentDidMount(){
 
     var deviceConnectionInfo = {};
     if(connectedToDevice != "Connected"){
-      // setTimeout(function() {
-      //   manager.stopDeviceScan();
-      // }, 3000)
       manager.startDeviceScan(null, null, (error, device) => {
         if(connectedToDevice != "In Progress"){
           this.state.dispatch(scanInProgress())
           var temp = Object.assign({}, this.state, {
             connectedToDevice: "In Progress"
           })
-          this.setState(temp, this.forceUpdate())
+          this.setState(temp)
         }
         if (error) {
           return
         }
-        // if (device.name != '') {
-          var temp = Object.assign({}, this.state, {
-            scannedDeviceName: device.name
-          })
-          this.setState(temp, this.forceUpdate())
-        // }
-        
         if (device.name == defaultDevice) {  //should be 'raspberrypi'
 
         console.log("device names matched");

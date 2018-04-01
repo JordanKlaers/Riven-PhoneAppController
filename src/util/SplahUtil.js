@@ -35,25 +35,20 @@ function loadDeviceNamesFromStorage(deviceStorage, dispatch, defaultDevice, getS
 }
 
 function autoConnect(args) {
-    if(args.redirectBool){ //are we still on splash page
+    if(args.redirectBool){ //are we still on splash page 
         if ((args.deviceBluetoothstate == false || args.defaultDevice == 'NULL') && !args.initializedRedirect) {
           var tempState = Object.assign({}, args.state, {
             initiatedSetTimeout: true
           });
           args.setState(tempState, ()=>{
-            setTimeout(()=>{
-              {args.dispatch({
-                type: 'Redirect Is Triggered',
-                action: args.dispatch(args.navigate({
-                  routeName: 'bluetooth'
+            args.dispatch({
+            type: 'Redirect Is Triggered',
+            action: args.dispatch(args.navigate({
+                    routeName: 'bluetooth'
                 }))
-              })}
-            },10);
+            })
           })
         }
-        // else if(deviceBluetoothstate && (defaultDevice != '' || defaultDevice != 'NULL') && (connectedToDevice != "Connected")){
-  
-        // } 
         else if(args.connectedToDevice == "Connected"){  //are we connected to the device
           if(args.initiatedSetTimeout == false){
             var tempState = Object.assign({}, args.state, {
@@ -101,8 +96,99 @@ function autoConnect(args) {
       }
 }
 
+
+function pushUpdateState(nextState, state, setState){
+    if(nextState.bluetooth.deviceNameFromStorage != state.defaultDevice){   //update the default device to connect to
+        var tempState = Object.assign({}, state, {
+          defaultDevice: nextState.bluetooth.defaultDevice    
+        });
+        setState(tempState)
+      }
+      if(nextState.bluetooth.deviceBluetoothstate != state.deviceBluetoothstate){ //update the bluetoothstate
+  
+        var tempState = Object.assign({}, state, {
+          deviceBluetoothstate: nextState.bluetooth.deviceBluetoothstate
+        });
+        setState(tempState)
+      }
+      if(nextState.bluetooth.connectedToDevice != state.connectedToDevice){ // update statu of connection to external device
+  
+        var tempState = Object.assign({}, state, {
+          connectedToDevice: nextState.bluetooth.connectedToDevice
+        });
+        setState(tempState)
+      }
+}
+
+function tryToConnect(args) {
+    var deviceConnectionInfo = {};
+    if(args.connectedToDevice != "Connected"){
+        args.manager.startDeviceScan(null, null, (error, device) => {
+        if(args.connectedToDevice != "In Progress"){
+            args.dispatch(args.scanInProgress())
+            var temp = Object.assign({}, this.state, {
+            connectedToDevice: "In Progress"
+            })
+            args.setState(temp, this.forceUpdate())
+        }
+        if (error) {
+            return
+        }
+        if (device.name == defaultDevice) {  //should be 'raspberrypi'
+
+        console.log("device names matched");
+
+            var deviceObject = {};
+            manager.stopDeviceScan();
+            manager.connectToDevice(device.id)
+            .then((device) => {
+
+            deviceObject = device;
+            deviceConnectionInfo.device = device;
+            return device.discoverAllServicesAndCharacteristics();
+            })
+            .then((device) => {
+
+            deviceConnectionInfo.deviceID = device.id
+            return manager.servicesForDevice(device.id)
+            })
+            .then((services) => {
+            console.log("all services: ", services);
+            var service = null;
+            for(let i=0; i<services.length; i++) {
+                if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
+                console.log("1:", services[i].uuid);
+                service = services[i].uuid
+
+                }
+            }
+            deviceConnectionInfo.writeServiceUUID = service
+            return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+            })
+            .then((characteristic)=> {
+            console.log("characteristics : ", characteristic);
+            if (characteristic[0]) {
+                deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+                this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
+            }
+            else {
+                console.log("wasnt good");
+            }
+
+
+            },
+            (error) => {
+
+            });
+        }
+        });
+    }
+    }
+
+
 export default {
     bluetoothListener,
     loadDeviceNamesFromStorage,
-    autoConnect
+    autoConnect,
+    pushUpdateState
 };
