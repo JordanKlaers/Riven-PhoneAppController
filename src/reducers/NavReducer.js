@@ -12,12 +12,6 @@ function NavReducer(state = thisOne, action) {
 
   let nextState;
   switch (action.type) {
-    case 'Custom Action':
-    console.log("hit customAction");
-      nextState = Object.assign({}, state, {
-        Custom_Action_KEY: "the customAction created this key"
-      })
-      break;
     case 'ProfileScreen':
       nextState = AppNavigator.router.getStateForAction(
         NavigationActions.navigate({ routeName: 'Splash'}),

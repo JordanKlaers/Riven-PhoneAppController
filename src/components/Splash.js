@@ -32,8 +32,9 @@ class Splash extends Component {
   constructor(props) {
     super(props)
     this.setState = this.setState.bind(this);
+    this.forceUpdate = this.forceUpdate.bind(this);
     this.state = {                      //should be just the ones that i need to worry about changing
-      localRedirectBool: true,
+      onSplashPage: props.bluetooth.onSplashPage,
       manager: props.bluetooth.manager,
       currentBluetoothState: props.bluetooth.subscription || null,
       defaultDevice: props.bluetooth.defaultDevice,
@@ -53,9 +54,8 @@ class Splash extends Component {
   }
 
   componentDidUpdate(state){
-    
     var args ={
-      redirectBool: this.state.localRedirectBool,
+      onSplashPage: this.state.onSplashPage,
       deviceBluetoothstate: this.state.deviceBluetoothstate,
       defaultDevice: this.state.defaultDevice,
       initializedRedirect: this.state.initiatedSetTimeout,
@@ -68,14 +68,15 @@ class Splash extends Component {
       manager: this.state.manager,
       state: this.state,
       scanInProgress: scanInProgress,
-      saveConnectionData: saveConnectionData
+      saveConnectionData: saveConnectionData,
+      forceUpdate: this.forceUpdate
     }
 
     SplashUtil.autoConnect(args);
   }
 
   componentWillReceiveProps(nextState){
-    SplashUtil.pushUpdateState(nextState, this.state, this.setState);
+    SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
   }
 
   navigationOptions = {

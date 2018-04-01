@@ -6,6 +6,7 @@ import { BleManager } from 'react-native-ble-plx';
       var manager = new BleManager();
       var bluetoothSubscription = null;
       var bluetooth = {
+        onSplashPage: true,
         manager: manager,
         deviceBluetoothstate: bluetoothSubscription,
         defaultDevice: "",           //currentDeviceName
@@ -47,7 +48,6 @@ import { BleManager } from 'react-native-ble-plx';
         var result = Object.assign({}, state);
         result.allSavedDevices.push(action.deviceName);
         if(result.defaultDevice == null || result.defaultDevice == ""){
-          console.log("set default when saved");
           result.defaultDevice = action.deviceName
           AsyncStorage.setItem('defaultDevice', action.deviceName);
           AsyncStorage.setItem(action.deviceName, action.deviceName);
@@ -55,14 +55,12 @@ import { BleManager } from 'react-native-ble-plx';
         else {
           AsyncStorage.setItem(action.deviceName, action.deviceName);
         }
-        // AsyncStorage.getAllKeys().then((value)=>{
-        //   console.log("storage keys: ", value);
-        //   console.log("all saved devices: ", result.allSavedDevices);
-        // })
         return result
       case 'Scan In Progress':
-        state.connectedToDevice = "In Progress"
-        return { ...state };
+        var result = Object.assign({}, state, {
+          connectedToDevice: "In Progress"
+        });
+        return result;
       case 'Redirect Is Triggered':
         var result = Object.assign({}, state, {
           shouldRedirect: false
@@ -80,6 +78,16 @@ import { BleManager } from 'react-native-ble-plx';
           AsyncStorage.setItem('defaultDevice', "")
         }
         return result
+      case 'Not On Splash Page':
+      console.log('inside not on splash');
+        var result = Object.assign({}, state, {
+          onSplashPage: false
+        });
+        if (result.connectedToDevice == 'In Progress') {
+          result.connectedToDevice = 'No Connection';
+        }
+        result.manager.stopDeviceScan();
+        return result;
       default:
         state.FROMBLUETOOTh = "FROM BLUETOOTHER"
         return state;

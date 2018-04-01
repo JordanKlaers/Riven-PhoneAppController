@@ -41,8 +41,6 @@ export const saveDeviceNameTOStorage = (deviceName) => {
 }
 
 export const deleteDeviceNameFromStorage = ( deviceName ) =>{
-  console.log("THIS?");
-  console.log(deviceName);
   return {
     type: 'Delete Device Names From Storage',
     deviceName
@@ -80,5 +78,11 @@ export const triggered = (state) => {
   return {
     type: 'Redirect Is Triggered',
     state
+  }
+}
+
+export const notOnSplashPage = () => {
+  return {
+    type: 'Not On Splash Page'
   }
 }

@@ -21,7 +21,8 @@ import {
   setSelectedDevice,
   saveDeviceNameTOStorage,
   saveConnectionData,
-  scanInProgress
+  scanInProgress,
+  notOnSplashPage
 } from '../actions';
 import BluetoothUtil from '../util/BluetoothUtil.js';
 
@@ -67,6 +68,7 @@ class Bluetooth extends Component {
     }
   }
   componentWillMount(){
+    this.state.dispatch(notOnSplashPage());
     var temp = Object.assign({}, this.state)
     var result = Dimensions.get("screen")
     temp.screenDIM.height = result.height
@@ -99,9 +101,8 @@ class Bluetooth extends Component {
           })
       }
   }
-
   componentWillReceiveProps(nextState){
-
+    this.count ++
     const args = {
       nextState: nextState,
       setState: this.setState,
@@ -109,7 +110,7 @@ class Bluetooth extends Component {
       state: this.state,
       manager: this.state.manager
     }
-    this.connectionStatus();
+    this.connectionStatus(nextState.connectedToDevice);
     BluetoothUtil.pushUpdateState(args);
     
   }
@@ -126,7 +127,7 @@ class Bluetooth extends Component {
 
   selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({name: name, dispatch: this.props.dispatch, set: setSelectedDevice})
 
-  connectionStatus = () =>  BluetoothUtil.connectionStatus(this.state.connectedToDevice)
+  connectionStatus = (connectedToDevice) =>  BluetoothUtil.connectionStatus(connectedToDevice)
 
   toggelDefaultDeviceSelection = () => {
     var temp = Object.assign({}, this.state, {

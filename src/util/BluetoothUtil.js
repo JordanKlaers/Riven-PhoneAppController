@@ -22,7 +22,9 @@ function pushUpdateState(args){
       var temp = Object.assign({}, this.state, {
         connectedToDevice: args.nextState.bluetooth.connectedToDevice
       });
-      args.setState(temp);
+      args.setState(temp, () => {
+        args.forceUpdate();
+      });
     }
     // if (args.nextState.waitedForScan != args.state.waitedForScan) {
     //     var temp = Object.assign({}, args.state, {
@@ -129,7 +131,7 @@ function tryToConnect(args) {
               args.dispatch(args.save(deviceConnectionInfo, deviceObject))
             }
             else {
-              console.log("wasnt good");
+              console.log("retrieving connection data failed when pairing with the device");
             }
           },
           (error) => {
