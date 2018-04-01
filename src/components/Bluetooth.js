@@ -125,7 +125,7 @@ class Bluetooth extends Component {
 
   removeDevice = (name) => BluetoothUtil.removeDevice({name: name, state: this.state, setState: this.setState, dispatch: this.props.dispatch, delete: deleteDeviceNameFromStorage})
 
-  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({name: name, dispatch: this.props.dispatch, set: setSelectedDevice})
+  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({name: name, dispatch: this.props.dispatch, set: setSelectedDevice, tryToConnect: this.tryToConnect, forceUpdate: this.forceUpdate})
 
   connectionStatus = (connectedToDevice) =>  BluetoothUtil.connectionStatus(connectedToDevice)
 
@@ -137,7 +137,7 @@ class Bluetooth extends Component {
   }
 
 
-  tryToConnect = () => BluetoothUtil.tryToConnect({connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState})
+  tryToConnect = (name) => BluetoothUtil.tryToConnect({defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate}, name)
 
 
   // (deviceName, connectedToDevice, manager)=>{

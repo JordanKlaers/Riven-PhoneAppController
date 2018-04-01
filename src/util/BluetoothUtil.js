@@ -77,6 +77,8 @@ function removeDevice(args) {
 function selectDefaultDevice(args) {
     AsyncStorage.setItem('defaultDevice', args.name)
     args.dispatch(args.set(args.name))
+    console.log('clicked name to connect');
+    args.tryToConnect(args.name);
 }
 
 function connectionStatus(connectToDevice) {
@@ -88,7 +90,8 @@ function connectionStatus(connectToDevice) {
     }
 }
 
-function tryToConnect(args) {
+function tryToConnect(args, name) {
+    console.log('trying to connect via  the bluetooth component');
     var deviceConnectionInfo = {};
     if(args.connectedToDevice != "Connected"){
       args.manager.startDeviceScan(null, null, (error, device) => {
@@ -102,23 +105,33 @@ function tryToConnect(args) {
         if (error) {
           return
         }
-        if (device.name == args.defaultDevice) {  //should be 'raspberrypi'
+        console.log('searching for: ', name);
+        if (device.name == name) {  //should be 'raspberrypi'
+        console.log('we found it when scanning: ', device.name);
           var deviceObject = {};
           args.manager.stopDeviceScan();
+          console.log('stopped scanning w/device id', device.id);
+          args.manager.isDeviceConnected(device.id).then(function ugh(thing) {
+             console.log(thing)
+          });
           args.manager.connectToDevice(device.id)
           .then((device) => {
+              console.log('1. connected');
             deviceObject = device;
             deviceConnectionInfo.device = device;
             return device.discoverAllServicesAndCharacteristics();
           })
           .then((device) => {
+              console.log('2. discovery stuff');
             deviceConnectionInfo.deviceID = device.id
             return args.manager.servicesForDevice(device.id)
           })
           .then((services) => {
+              console.log('3. service stuff');
             var service = null;
             for(let i=0; i<services.length; i++) {
               if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
+                  console.log('found the service uuid');
                 service = services[i].uuid
               }
             }
@@ -128,7 +141,9 @@ function tryToConnect(args) {
           .then((characteristic)=> {
             if (characteristic[0]) {
               deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+              console.log('dispatching that we are connected');
               args.dispatch(args.save(deviceConnectionInfo, deviceObject))
+              args.forceUpdate();
             }
             else {
               console.log("retrieving connection data failed when pairing with the device");

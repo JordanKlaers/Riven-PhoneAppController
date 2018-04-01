@@ -123,8 +123,6 @@ function pushUpdateState(nextState, state, setState, forceUpdate){
         });
         setState(tempState)
     }
-    console.log('prev: ', state.onSplashPage);
-    console.log('nextState: ', nextState.bluetooth.onSplashPage);
     if(nextState.bluetooth.onSplashPage != state.onSplashPage && nextState.bluetooth.onSplashPage != undefined) {
         var tempState = Object.assign({}, state, {
             onSplashPage: nextState.bluetooth.onSplashPage

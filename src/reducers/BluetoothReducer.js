@@ -19,9 +19,17 @@ import { BleManager } from 'react-native-ble-plx';
   function BluetoothReducer(state= bluetooth, action) {
     switch (action.type) {
       case 'Save Connection Data':
-        state.deviceObject = action.deviceObject
-        state.connectedToDevice = "Connected";                    //need to save so we can send data to the service
-        return { ...state, ...action.connectionData };
+      console.log('ACTION: ', action.deviceObject.writeCharacteristicWithoutResponseForService);
+        var result = Object.assign({}, state, {
+          deviceObject: action.deviceObject,
+          connectedToDevice: "Connected"
+        }, action.connectionData
+        );
+        // console.log('result.deviceobj ', result.deviceObject);
+        return result;
+        // state.deviceObject = action.deviceObject
+        // state.connectedToDevice = "Connected";                    //need to save so we can send data to the service
+        // return { ...state, ...action.connectionData };
 
       case 'Save Bluetooth State':
 
@@ -85,8 +93,10 @@ import { BleManager } from 'react-native-ble-plx';
         });
         if (result.connectedToDevice == 'In Progress') {
           result.connectedToDevice = 'No Connection';
+          result.manager.stopDeviceScan();
+          // result.manager.cancelDeviceConnection();
         }
-        result.manager.stopDeviceScan();
+        
         return result;
       default:
         state.FROMBLUETOOTh = "FROM BLUETOOTHER"
