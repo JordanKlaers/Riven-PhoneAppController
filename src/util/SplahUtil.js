@@ -72,7 +72,7 @@ function autoConnect(args) {
             if(!args.haveTriedToConnect){
                 args.setState(Object.assign({}, this.state, {
                 haveTriedToConnect: true
-              }), args.tryToConnect(args.defaultDevice, args.connectedToDevice, args.manager))
+              }), tryToConnect(args))                   //this function is below
             }
             else {
               if(args.initializedRedirect == false && args.connectedToDevice != "In progress"){
@@ -123,67 +123,56 @@ function pushUpdateState(nextState, state, setState){
 function tryToConnect(args) {
     var deviceConnectionInfo = {};
     if(args.connectedToDevice != "Connected"){
-        args.manager.startDeviceScan(null, null, (error, device) => {
+      args.manager.startDeviceScan(null, null, (error, device) => {
         if(args.connectedToDevice != "In Progress"){
-            args.dispatch(args.scanInProgress())
-            var temp = Object.assign({}, this.state, {
+          args.dispatch(args.scanInProgress())
+          var temp = Object.assign({}, this.state, {
             connectedToDevice: "In Progress"
-            })
-            args.setState(temp, this.forceUpdate())
+          })
+          args.setState(temp)
         }
         if (error) {
-            return
+          return
         }
-        if (device.name == defaultDevice) {  //should be 'raspberrypi'
-
-        console.log("device names matched");
-
-            var deviceObject = {};
-            manager.stopDeviceScan();
-            manager.connectToDevice(device.id)
-            .then((device) => {
-
+        if (device.name == args.defaultDevice) {  //should be 'raspberrypi'
+          var deviceObject = {};
+          args.manager.stopDeviceScan();
+          args.manager.connectToDevice(device.id)
+          .then((device) => {
             deviceObject = device;
             deviceConnectionInfo.device = device;
             return device.discoverAllServicesAndCharacteristics();
-            })
-            .then((device) => {
-
+          })
+          .then((device) => {
             deviceConnectionInfo.deviceID = device.id
-            return manager.servicesForDevice(device.id)
-            })
-            .then((services) => {
-            console.log("all services: ", services);
+            return args.manager.servicesForDevice(device.id)
+          })
+          .then((services) => {
             var service = null;
             for(let i=0; i<services.length; i++) {
-                if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
-                console.log("1:", services[i].uuid);
+              if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
                 service = services[i].uuid
-
-                }
+              }
             }
             deviceConnectionInfo.writeServiceUUID = service
-            return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-            })
-            .then((characteristic)=> {
-            console.log("characteristics : ", characteristic);
+            return args.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+          })
+          .then((characteristic)=> {
             if (characteristic[0]) {
-                deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-                this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
+              deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+              args.dispatch(args.saveConnectionData(deviceConnectionInfo, deviceObject))
             }
             else {
-                console.log("wasnt good");
+              console.log("wasnt good");
             }
+          },
+          (error) => {
 
-
-            },
-            (error) => {
-
-            });
+          });
         }
-        });
+      });
     }
-    }
+}
 
 
 export default {
