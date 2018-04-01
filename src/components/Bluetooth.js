@@ -18,12 +18,12 @@ import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
 import {
   deleteDeviceNameFromStorage,
-  setDefaultDevice,
+  setSelectedDevice,
   saveDeviceNameTOStorage,
   saveConnectionData,
   scanInProgress
-} from '../actions'
-
+} from '../actions';
+import BluetoothUtil from '../util/BluetoothUtil.js';
 
 const backgroundImage = require('../../image/bluetooth.jpg');
 
@@ -47,6 +47,8 @@ class Bluetooth extends Component {
   constructor(props) {
 
     super(props)
+    this.setState = this.setState.bind(this);
+    this.forceUpdate = this.forceUpdate.bind(this);
     this.state = {
       screenDIM: {
         isVerticle: true,
@@ -60,7 +62,8 @@ class Bluetooth extends Component {
       defaultDevice: props.bluetooth.defaultDevice,
       toggelSelection: false,
       manager: props.bluetooth.manager,
-      dispatch: this.props.navigation.dispatch
+      dispatch: this.props.navigation.dispatch,
+      waitedForScan: false
     }
   }
   componentWillMount(){
@@ -81,78 +84,49 @@ class Bluetooth extends Component {
     })
   }
 
-  componentDidUpdate(state){
+  componentDidMount(state){
+    if(this.state.connectedToDevice == 'In Progress' && !this.state.waitedForScan) {
+          var temp = Object.assign({}, this.state, {
+              waitedForScan: true
+          });
+          this.setState(temp, ()=>{
+                  var temp = Object.assign({}, this.state, {
+                      connectedToDevice: "no connection"
+                  });
+                  this.setState(temp, ()=>{
+                      this.state.manager.stopDeviceScan();
+                  })
+          })
+      }
   }
 
   componentWillReceiveProps(nextState){
 
-    console.log("device obecjt?: ", nextState.bluetooth.deviceObject);
-    if(nextState.bluetooth.allSavedDevices != this.state.allSavedDevices){
-      var temp = Object.assign({}, this.state, {
-        allSavedDevices: nextState.bluetooth.allSavedDevices
-      })
-      this.setState(temp, ()=>{
-        this.forceUpdate();
-      })
+    const args = {
+      nextState: nextState,
+      setState: this.setState,
+      forceUpdate: this.forceUpdate,
+      state: this.state,
+      manager: this.state.manager
     }
-    if(nextState.bluetooth.defaultDevice != this.state.defaultDevice) {
-      var temp = Object.assign({}, this.state, {
-        defaultDevice: nextState.bluetooth.defaultDevice
-      })
-      if(!this.state.allSavedDevices.includes(nextState.bluetooth.defaultDevice) && nextState.bluetooth.defaultDevice != ""){
-        temp.allSavedDevices.push(nextState.bluetooth.defaultDevice)
-      }
-      console.log(nextState.bluetooth.defaultDevice, ": should be the current default device");
-      this.setState(temp)
-    }
-    if(nextState.bluetooth.connectedToDevice != this.state.connectedToDevice) {
-      var temp = Object.assign({}, this.state, {
-        connectedToDevice: nextState.bluetooth.connectedToDevice
-      })
-      this.setState(temp)
-    }
+    this.connectionStatus();
+    BluetoothUtil.pushUpdateState(args);
+    
   }
+
   navigationOptions = {
     header: null
   }
 
-  updateText = (input)=>{
-    var tempState = Object.assign({}, this.state, {
-      textInput: input
-    })
-    this.setState(tempState)
-  }
+  updateText = (input) => BluetoothUtil.updateText({input, setState: this.setState, state: this.state});
 
-  saveNewDevice = ()=>{
-    if(this.state.textInput != "" && !this.state.allSavedDevices.includes(this.state.textInput.toLowerCase().replace(/\s+/g, ''))) {
-      this.props.dispatch(saveDeviceNameTOStorage(this.state.textInput.toLowerCase().replace(/\s+/g, '')))
-    }
-  }
+  saveNewDevice = () => BluetoothUtil.saveNewDevice({state: this.state, dispatch: this.props.dispatch, save: saveDeviceNameTOStorage});
 
-  removeDevice = (name) => {
-    var tempState = Object.assign({}, this.state, {
-      allSavedDevices: this.state.allSavedDevices.filter((deviceName)=>{
-        return deviceName != name;
-      })
-    })
-    this.setState(tempState, ()=> {
-      this.props.dispatch(deleteDeviceNameFromStorage(name));
-    })
-  }
+  removeDevice = (name) => BluetoothUtil.removeDevice({name: name, state: this.state, setState: this.setState, dispatch: this.props.dispatch, delete: deleteDeviceNameFromStorage})
 
-  selectDefaultDevice = (name) => {
-    AsyncStorage.setItem('defaultDevice', name)
-    this.props.dispatch(setDefaultDevice(name))
-  }
+  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({name: name, dispatch: this.props.dispatch, set: setSelectedDevice})
 
-  connectionStatus = () => {
-    if(this.state.connectToDevice === "In Progress"){
-      return this.state.connectToDevice
-    }
-    else {
-      return this.state.connectToDevice ?  "Connected" : "No Connection"
-    }
-  }
+  connectionStatus = () =>  BluetoothUtil.connectionStatus(this.state.connectedToDevice)
 
   toggelDefaultDeviceSelection = () => {
     var temp = Object.assign({}, this.state, {
@@ -162,64 +136,72 @@ class Bluetooth extends Component {
   }
 
 
-  tryToConnect = (deviceName, connectedToDevice, manager)=>{
-    var deviceConnectionInfo = {};
-    if(connectedToDevice == "No connection"){
-      manager.startDeviceScan(null, null, (error, device) => {
-        if(connectedToDevice != "In Progress"){
-          this.state.dispatch(scanInProgress())
-          var temp = Object.assign({}, this.state, {
-            connectedToDevice: "In Progress"
-          })
-          this.setState(temp)
-        }
-        if (error) {
-          return
-        }
-        if (device.name == this.state.defaultDevice) {  //should be 'raspberrypi'
-          var deviceObject = {};
-          manager.stopDeviceScan();
-          manager.connectToDevice(device.id)
-          .then((device) => {
-            deviceObject = device;
-            deviceConnectionInfo.device = device;
-            return device.discoverAllServicesAndCharacteristics();
-          })
-          .then((device) => {
-            deviceConnectionInfo.deviceID = device.id
-            return manager.servicesForDevice(device.id)
-          })
-          .then((services) => {
-            console.log("Services: ", services);
-            var service;
-            for(let i=0; i<services.length; i++) {
-              if(services[i].uuid == "ffffffff-ffff-ffff-ffff-fffffffffff0"){
-                service = services[i].uuid
-                console.log("got it:", service);
-              }
-            }
-            deviceConnectionInfo.writeServiceUUID = service
-            return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-          })
-          .then((characteristic)=> {
-            deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-            this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
-            // var temp = Object.assign({}, this.state, {
-            //   connectedToDevice: "Connected"
-            // })
-            // this.setState(temp)
-          },
-          (error) => {
+  tryToConnect = () => BluetoothUtil.tryToConnect({connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState})
 
-          });
-        }
-      });
-    }
 
-  }
+  // (deviceName, connectedToDevice, manager)=>{
+
+  //   var deviceConnectionInfo = {};
+  //   if(connectedToDevice == "No connection"){
+  //     manager.startDeviceScan(null, null, (error, device) => {
+  //       if(connectedToDevice != "In Progress"){
+  //         this.state.dispatch(scanInProgress())
+  //         var temp = Object.assign({}, this.state, {
+  //           connectedToDevice: "In Progress"
+  //         })
+  //         this.setState(temp)
+  //       }
+  //       if (error) {
+  //         return
+  //       }
+  //       if (device.name == this.state.defaultDevice) {  //should be 'raspberrypi'
+  //         var deviceObject = {};
+  //         manager.stopDeviceScan();
+  //         manager.connectToDevice(device.id)
+  //         .then((device) => {
+  //           deviceObject = device;
+  //           deviceConnectionInfo.device = device;
+  //           return device.discoverAllServicesAndCharacteristics();
+  //         })
+  //         .then((device) => {
+  //           deviceConnectionInfo.deviceID = device.id
+  //           return manager.servicesForDevice(device.id)
+  //         })
+  //         .then((services) => {
+  //           console.log("Services: ", services);
+  //           var service;
+  //           for(let i=0; i<services.length; i++) {
+  //             if(services[i].uuid == "ffffffff-ffff-ffff-ffff-fffffffffff0"){
+  //               service = services[i].uuid
+  //               console.log("got it:", service);
+  //             }
+  //           }
+  //           deviceConnectionInfo.writeServiceUUID = service
+  //           return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+  //         })
+  //         .then((characteristic)=> {
+  //           deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
+  //           this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
+  //           // var temp = Object.assign({}, this.state, {
+  //           //   connectedToDevice: "Connected"
+  //           // })
+  //           // this.setState(temp)
+  //         },
+  //         (error) => {
+
+  //         });
+  //       }
+  //     });
+  //   }
+
+  // }
 
   stopScan = () => {
+    var temp = Object.assign({}, this.state, {
+      connectedToDevice: "no connection"
+    });
     this.state.manager.stopDeviceScan();
+    this.setState(temp)
   }
 
 
@@ -389,7 +371,7 @@ class Bluetooth extends Component {
 
             <TextInput
              style={style.upRight.deviceNameInput}
-             onChangeText={(input)=>{this.updateText(input)}}
+             onChangeText={(input)=>{this.updateText(input, this.setState)}}
             />
             <TouchableHighlight onPress={()=>{this.saveNewDevice()}} style={style.upRight.saveButton}>
               <Text>

@@ -63,12 +63,12 @@ export const setSelectedDevice = (name) => {
   }
 }
 
-export const setDefaultDevice = (name) => {
-  return {
-    type: 'Set Default Device',
-    name
-  }
-}
+// export const setDefaultDevice = (name) => {
+//   return {
+//     type: 'Set Default Device',
+//     name
+//   }
+// }
 
 export const scanInProgress = () => {
   return {

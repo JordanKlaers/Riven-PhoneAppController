@@ -38,16 +38,10 @@ import { BleManager } from 'react-native-ble-plx';
         });
         return result
       case 'Load Default Device From Storage':
-      console.log("loading from Storage: ", action.name);
         var result = Object.assign({}, state, {
           defaultDevice: action.name
         });
         return result;
-      case 'Set Default Device':
-        var result = Object.assign({}, state,{
-          defaultDevice: action.name 
-        });
-        return result
       case 'Save Device Name To Storage':
 
         var result = Object.assign({}, state);
