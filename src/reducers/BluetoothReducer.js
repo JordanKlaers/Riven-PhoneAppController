@@ -25,7 +25,6 @@ import { BleManager } from 'react-native-ble-plx';
           connectedToDevice: "Connected"
         }, action.connectionData
         );
-        // console.log('result.deviceobj ', result.deviceObject);
         return result;
         // state.deviceObject = action.deviceObject
         // state.connectedToDevice = "Connected";                    //need to save so we can send data to the service

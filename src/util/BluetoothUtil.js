@@ -143,7 +143,6 @@ function tryToConnect(args, name) {
               deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
               console.log('dispatching that we are connected');
               args.dispatch(args.save(deviceConnectionInfo, deviceObject))
-              args.forceUpdate();
             }
             else {
               console.log("retrieving connection data failed when pairing with the device");
