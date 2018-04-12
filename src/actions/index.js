@@ -1,14 +1,24 @@
-export const customAction = () => {
+export const splashTestAction = () => {
+  console.log('inside action that is a problem');
   return {
-    type: 'Custom Action'
+    type: 'splash test Action'
   }
 }
 
-export const saveConnectionData = (connectionData, deviceObject) => {
+export const connectFunction = (fnc) => {
+  return {
+    type: 'connect function',
+    connectFunction: fnc
+  }
+}
+
+export const saveConnectionData = (connectionData, deviceObject, navigateAfterConnection) => {
+  console.log('only once: (inside action)', navigateAfterConnection);
   return {
     type: 'Save Connection Data',
     connectionData,
-    deviceObject
+    deviceObject,
+    navigateAfterConnection
   }
 }
 
@@ -78,11 +88,5 @@ export const triggered = (state) => {
   return {
     type: 'Redirect Is Triggered',
     state
-  }
-}
-
-export const notOnSplashPage = () => {
-  return {
-    type: 'Not On Splash Page'
   }
 }

@@ -5,6 +5,7 @@ import { addNavigationHelpers, StackNavigator, TabNavigator } from 'react-naviga
 import Splash from '../components/Splash';
 import Bluetooth from '../components/Bluetooth';
 import Controller from '../components/Controller'
+import BluetoothReducer from '../reducers/BluetoothReducer';
 
 
 const TabNav = TabNavigator({
@@ -25,7 +26,6 @@ const TabNav = TabNavigator({
 export const AppNavigator = StackNavigator({
   Splash: { screen: Splash },
   TabNav : { screen: TabNav},
-
 });
 
 const AppWithNavigationState = ({ dispatch, nav}) => (
@@ -40,8 +40,12 @@ AppWithNavigationState.propTypes = {
   // nav: PropTypes.object.isRequired,
 };
 
-const mapStateToProps = state => ({
-  nav: state.NavReducer,
-});
+const mapStateToProps = state => {
+  // console.log('state: ', state);
+  return ({
+    nav: state.NavReducer,
+    bluetooth: state.BluetoothReducer
+  })
+};
 
 export default connect(mapStateToProps)(AppWithNavigationState);

@@ -1,6 +1,7 @@
 import { NavigationActions } from 'react-navigation';
 import { AsyncStorage } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
+import { connectFunction } from '../actions';
 
 
       var manager = new BleManager();
@@ -13,23 +14,36 @@ import { BleManager } from 'react-native-ble-plx';
         connectedToDevice: "No connection",         //false in progress or true for connected
         shouldRedirect: true,
         allSavedDevices: [],         //the key == the device name for all
-        deviceObject: {}
+        deviceObject: {},
+        splashtestprop: null,
+        deviceObject: {},
+        connectFunction: null,
+        navigateAfterConnection: false,
+        learning: 'nothing',
+        triggered: 'nothing'
       }
 
   function BluetoothReducer(state= bluetooth, action) {
     switch (action.type) {
+      case "learningDispatch":
+      console.log('inside the learning dispatch function');
+        console.log('-------->' , action.learningDispatchObj);  
+      return Object.assign({}, state, action.learningDispatchObj)
+      case "connect function":
+        return Object.assign({}, state, {connectFunction: action.connectFunction})
       case 'Save Connection Data':
-      console.log('ACTION: ', action.deviceObject.writeCharacteristicWithoutResponseForService);
-        var result = Object.assign({}, state, {
-          deviceObject: action.deviceObject,
-          connectedToDevice: "Connected"
-        }, action.connectionData
+      console.log('reducer: saving connection data');
+        var result = Object.assign(
+          {}, 
+          state, {
+            deviceObject: action.deviceObject,
+            connectedToDevice: "Connected"
+          }, 
+          action.connectionData, 
+          {navigateAfterConnection: action.navigateAfterConnection || false}
         );
+        // console.log('should include (reducer) ', action.navigateAfterConnection);
         return result;
-        // state.deviceObject = action.deviceObject
-        // state.connectedToDevice = "Connected";                    //need to save so we can send data to the service
-        // return { ...state, ...action.connectionData };
-
       case 'Save Bluetooth State':
 
         state.deviceBluetoothstate = action.state
@@ -69,6 +83,7 @@ import { BleManager } from 'react-native-ble-plx';
         });
         return result;
       case 'Redirect Is Triggered':
+        console.log('Redirect triggered: (also means the nav dispatch)');
         var result = Object.assign({}, state, {
           shouldRedirect: false
         });
@@ -86,7 +101,6 @@ import { BleManager } from 'react-native-ble-plx';
         }
         return result
       case 'Not On Splash Page':
-      console.log('inside not on splash');
         var result = Object.assign({}, state, {
           onSplashPage: false
         });

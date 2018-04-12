@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Button, StyleSheet, Text, View, Dimensions } from 'react-native';
+import { TouchableHighlight, Button, StyleSheet, Text, View, Dimensions } from 'react-native';
 import { NavigationActions } from 'react-navigation';
 import {
   saveConnectionData,
@@ -13,7 +13,9 @@ import {
   connected,
   triggered,
   getSavedDeviceNames,
-  setSelectedDevice
+  setSelectedDevice,
+  splashTestAction,
+  connectFunction
 } from '../actions'
 import { AsyncStorage } from 'react-native';
 import SplashUtil from '../util/SplahUtil.js';
@@ -30,9 +32,11 @@ const styles = StyleSheet.create({
 class Splash extends Component {
 
   constructor(props) {
+    
+    
     super(props)
     this.setState = this.setState.bind(this);
-    this.forceUpdate = this.forceUpdate.bind(this);
+    this.forceUpdate = this.forceUpdate.bind(this);    
     this.state = {                      //should be just the ones that i need to worry about changing
       onSplashPage: props.bluetooth.onSplashPage,
       manager: props.bluetooth.manager,
@@ -43,18 +47,19 @@ class Splash extends Component {
       connectedToDevice: props.bluetooth.connectedToDevice,
       dimensions: {},
       haveTriedToConnect: false,
-      alldevices: props.bluetooth.allSavedDevices
+      deviceObject: props.bluetooth.deviceObject,
+      currentView: props.myNav.index
     }
   }
 
   componentWillMount(){
     SplashUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
     SplashUtil.loadDeviceNamesFromStorage(AsyncStorage, this.state.dispatch, this.state.defaultDevice, getSavedDeviceNames, setSelectedDevice)
-
   }
 
   componentDidUpdate(state){
     var args ={
+      currentView: this.state.currentView,
       onSplashPage: this.state.onSplashPage,
       deviceBluetoothstate: this.state.deviceBluetoothstate,
       defaultDevice: this.state.defaultDevice,
@@ -69,14 +74,28 @@ class Splash extends Component {
       state: this.state,
       scanInProgress: scanInProgress,
       saveConnectionData: saveConnectionData,
-      forceUpdate: this.forceUpdate
+      forceUpdate: this.forceUpdate,
+      currentView: this.state.currentView,
+      tookToLongToConnect: this.tookToLongToConnect
     }
-
     SplashUtil.autoConnect(args);
   }
 
   componentWillReceiveProps(nextState){
+    console.log('_____________SPLASH getting new props');
     SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
+  }
+
+  tookToLongToConnect = (currentView = this.state.currentView) => {
+    if (currentView == 0) {
+      console.log('toolongtoconnectandcurrentviewwas0');
+      this.state.dispatch({
+        type: 'Redirect Is Triggered',
+        action: this.state.dispatch(NavigationActions.navigate({
+          routeName: 'bluetooth'
+        }))
+      })
+    }
   }
 
   navigationOptions = {

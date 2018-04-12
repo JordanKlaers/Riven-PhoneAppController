@@ -16,13 +16,13 @@ import {
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
+import { NavigationActions } from 'react-navigation';
 import {
   deleteDeviceNameFromStorage,
   setSelectedDevice,
   saveDeviceNameTOStorage,
   saveConnectionData,
-  scanInProgress,
-  notOnSplashPage
+  scanInProgress
 } from '../actions';
 import BluetoothUtil from '../util/BluetoothUtil.js';
 
@@ -63,12 +63,18 @@ class Bluetooth extends Component {
       defaultDevice: props.bluetooth.defaultDevice,
       toggelSelection: false,
       manager: props.bluetooth.manager,
-      dispatch: this.props.navigation.dispatch,
-      waitedForScan: false
+      dispatch: props.navigation.dispatch,
+      waitedForScan: false,
+      deviceObject: props.bluetooth.deviceObject,
+      SplashDispatch: props.bluetooth.connectFunction,
+      myNav: props.myNav,
+      onBluetoothPage: true,
+      navigateAfterConnection: props.bluetooth.navigateAfterConnection,
+      learning: 'nothing',
+      triggered: 'nothing'
     }
   }
   componentWillMount(){
-    this.state.dispatch(notOnSplashPage());
     var temp = Object.assign({}, this.state)
     var result = Dimensions.get("screen")
     temp.screenDIM.height = result.height
@@ -102,17 +108,42 @@ class Bluetooth extends Component {
       }
   }
   componentWillReceiveProps(nextState){
+    console.log('_________BLUETOOTH getting new props');
+    // console.log(nextState.myNav);
     this.count ++
     const args = {
       nextState: nextState,
+      dispatch: this.state.dispatch,
       setState: this.setState,
       forceUpdate: this.forceUpdate,
       state: this.state,
-      manager: this.state.manager
+      manager: this.state.manager,
+      SplashDispatch: nextState.bluetooth.connectFunction,
+      deviceObject: this.state.deviceObject,
+      navigateAfterConnection: this.state.navigateAfterConnection,
+      doit: this.state.doit
     }
+    // if (nextState.bluetooth.navigateAfterConnection == true) {
+    //   this.state.dispatch({type: 'do it'})
+    // }
     this.connectionStatus(nextState.connectedToDevice);
     BluetoothUtil.pushUpdateState(args);
     
+  }
+
+  componentDidUpdate(prevProp, prevState) {
+    // console.log('bluetooth----->  deviceobj keys', Object.keys(this.state.deviceObject).length);
+    // console.log('connected than?', this.state.connectedToDevice);
+    // console.log('but on BT page', this.state.onBluetoothPage);
+    // console.log('need to nav?', this.state.navigateAfterConnection);
+    // if (Object.keys(this.state.deviceObject).length > 0 && this.state.onBluetoothPage == true && this.state.navigateAfterConnection == true) {
+      // console.log('so should changepages');
+      // this.setState(Object.assign(this.state, {onBluetoothPage: false}, {navigateAfterConnection: false})), () => this.state.dispatch(NavigationActions.navigate({
+        // routeName: 'controller'
+      // }))
+    // }
+    // console.log('bluetooth-DU- ', typeof this.state.deviceObject.writeCharacteristicWithoutResponseForService);
+    // console.log('prev---', prevState.deviceObject.writeCharacteristicWithoutResponseForService);
   }
 
   navigationOptions = {
@@ -136,9 +167,34 @@ class Bluetooth extends Component {
     this.setState(temp)
   }
 
+  
+  tryToConnect = (name) => BluetoothUtil.tryToConnect({saveConnectionData: saveConnectionData, defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
+  // () => { 
+  //   // var temp = Object.assign({}, this.state, { testing: 'testing' })
+  //   // this.setState(temp, () => {console.log('bad', this.state.testing)} ) 
+  //   this.state.SplashDispatch()
+    
+  // };
+  // 
+  changeTab = () => {
 
-  tryToConnect = (name) => BluetoothUtil.tryToConnect({defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate}, name)
-
+  this.state.dispatch({
+      type: 'hello',
+      action: this.state.dispatch(NavigationActions.navigate({
+          routeName: 'controller'
+      })),
+      addHello: 'helloString'
+  })
+    // console.log(NavigationActions.navigate({ routeName: 'controller', action: NavigationActions.navigate({ routeName: 'controller' })}));
+    // this.state.dispatch({ 
+    //   type: 'Navigation/NAVIGATE',
+    //   routeName: 'controller',
+    //   params: {
+    //     navigationParams: 'magic'
+    //   }
+    // });
+    // this.state.dispatch(NavigationActions.navigate({ routeName: 'controller', action: NavigationActions.navigate({ routeName: 'controller' })}));
+  }
 
   // (deviceName, connectedToDevice, manager)=>{
 
@@ -379,6 +435,12 @@ class Bluetooth extends Component {
                 Save
               </Text>
             </TouchableHighlight>
+
+            <TouchableHighlight onPress={()=>{this.changeTab()}} style={style.upRight.saveButton}>
+              <Text>
+                tab Nav
+              </Text>
+            </TouchableHighlight>
           </View>
         </View>
       )
@@ -455,6 +517,12 @@ class Bluetooth extends Component {
             <TouchableHighlight onPress={()=>{this.saveNewDevice()}} style={style.upRight.saveButton}>
               <Text>
                 Save
+              </Text>
+            </TouchableHighlight>
+
+            <TouchableHighlight onPress={()=>{this.changeTab()}} style={style.upRight.saveButton}>
+              <Text>
+                tab nav
               </Text>
             </TouchableHighlight>
           </View>

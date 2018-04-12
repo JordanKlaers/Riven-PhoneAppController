@@ -11,10 +11,17 @@ const thisOne = AppNavigator.router.getStateForAction(thisfirstAction);
 function NavReducer(state = thisOne, action) {
 
   let nextState;
-  switch (action.type) {
-    case 'ProfileScreen':
+  switch (action.routeName) {
+    case 'bluetooth':
       nextState = AppNavigator.router.getStateForAction(
-        NavigationActions.navigate({ routeName: 'Splash'}),
+        NavigationActions.navigate({ routeName: 'bluetooth'}),
+        state
+      );
+      break;
+    case 'controller':
+    // console.log('nav reducer yo :3 ______');
+      nextState = AppNavigator.router.getStateForAction(
+        NavigationActions.navigate({ routeName: 'controller'}),
         state
       );
       break;

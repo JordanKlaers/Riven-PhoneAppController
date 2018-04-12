@@ -1,6 +1,33 @@
 import { AsyncStorage } from 'react-native';
+import { AppNavigator } from '../navigators/AppNavigator';
+import { NavigationActions } from 'react-navigation';
 
 function pushUpdateState(args){
+    if (args.navigateAfterConnection != args.nextState.bluetooth.navigateAfterConnection) {
+        var temp = Object.assign({}, args.state, {
+            navigateAfterConnection: args.nextState.bluetooth.navigateAfterConnections
+        });
+        // console.log('updating navigateAfterConnection to:', args.nextState.bluetooth.navigateAfterConnection);
+        args.setState(temp, ()=>{
+            args.forceUpdate();
+        });
+    }
+    if(args.deviceObject != args.nextState.bluetooth.deviceObject) {
+        var temp = Object.assign({}, args.state, {
+            deviceObject: args.nextState.bluetooth.deviceObject
+          });
+          args.setState(temp, ()=>{
+            args.forceUpdate();
+          });  
+    }
+    if(args.SplashDispatch != args.nextState.bluetooth.connectFunction) {
+        var temp = Object.assign({}, args.state, {
+            SplashDispatch: args.nextState.bluetooth.connectFunction
+          });
+          args.setState(temp, ()=>{
+            args.forceUpdate();
+          });  
+    }
     if(args.nextState.bluetooth.allSavedDevices != args.state.allSavedDevices){
       var temp = Object.assign({}, args.state, {
         allSavedDevices: args.nextState.bluetooth.allSavedDevices
@@ -77,7 +104,6 @@ function removeDevice(args) {
 function selectDefaultDevice(args) {
     AsyncStorage.setItem('defaultDevice', args.name)
     args.dispatch(args.set(args.name))
-    console.log('clicked name to connect');
     args.tryToConnect(args.name);
 }
 
@@ -91,8 +117,7 @@ function connectionStatus(connectToDevice) {
 }
 
 function tryToConnect(args, name) {
-    console.log('trying to connect via  the bluetooth component');
-    var deviceConnectionInfo = {};
+    var connectionData = {};
     if(args.connectedToDevice != "Connected"){
       args.manager.startDeviceScan(null, null, (error, device) => {
         if(args.connectedToDevice != "In Progress"){
@@ -105,12 +130,10 @@ function tryToConnect(args, name) {
         if (error) {
           return
         }
-        console.log('searching for: ', name);
+        // console.log('searching for: ', name);
         if (device.name == name) {  //should be 'raspberrypi'
-        console.log('we found it when scanning: ', device.name);
           var deviceObject = {};
           args.manager.stopDeviceScan();
-          console.log('stopped scanning w/device id', device.id);
           args.manager.isDeviceConnected(device.id).then(function ugh(thing) {
              console.log(thing)
           });
@@ -118,12 +141,12 @@ function tryToConnect(args, name) {
           .then((device) => {
               console.log('1. connected');
             deviceObject = device;
-            deviceConnectionInfo.device = device;
+            connectionData.device = device;
             return device.discoverAllServicesAndCharacteristics();
           })
           .then((device) => {
               console.log('2. discovery stuff');
-            deviceConnectionInfo.deviceID = device.id
+            connectionData.deviceID = device.id
             return args.manager.servicesForDevice(device.id)
           })
           .then((services) => {
@@ -135,14 +158,30 @@ function tryToConnect(args, name) {
                 service = services[i].uuid
               }
             }
-            deviceConnectionInfo.writeServiceUUID = service
-            return args.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
+            connectionData.writeServiceUUID = service
+            return args.manager.characteristicsForDevice(connectionData.deviceID, connectionData.writeServiceUUID)
           })
           .then((characteristic)=> {
             if (characteristic[0]) {
-              deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-              console.log('dispatching that we are connected');
-              args.dispatch(args.save(deviceConnectionInfo, deviceObject))
+                connectionData.writeCharacteristicUUID = characteristic[0].uuid
+                // let connectionData = connectionData;
+                let navigateAfterConnection = true
+
+                // console.log('COPYTHIS: ', args.saveConnectionData(connectionData, deviceObject, navigateAfterConnection));
+                args.dispatch({
+                    type: 'Save Connection Data', 
+                    connectionData, 
+                    deviceObject, 
+                    navigateAfterConnection, 
+                    action: args.dispatch({type: 'navigate after connection', navigateAfterConnection: true, 
+                        action: args.dispatch({type: 'do it'})})
+                })
+                // args.setState(Object.assign(args.state, {navigateAfterConnection: true}))
+                
+                    // action: args.dispatch(NavigationActions.navigate({
+                    //     routeName: 'controller'
+                    // }))
+                
             }
             else {
               console.log("retrieving connection data failed when pairing with the device");

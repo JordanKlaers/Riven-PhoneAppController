@@ -48,14 +48,14 @@ class Controller extends Component {
         },                  //should be just the ones that i need to worry about changing
         deviceObject: props.bluetooth.deviceObject,
         writeServiceUUID: props.bluetooth.writeServiceUUID,
-        writeCharacteristicUUID: props.bluetooth.writeCharacteristicUUID
+        writeCharacteristicUUID: props.bluetooth.writeCharacteristicUUID,
+        nav: props.myNav
       }
     }
 
 
 
   componentDidMount() {
-    console.log('did mount?????');
     var temp = Object.assign({}, this.state)
     var result = Dimensions.get("screen")
     temp.screenDIM.height = result.height
@@ -75,106 +75,85 @@ class Controller extends Component {
 
   objectComparison = (a, b) => {
     var result = "match";
-    result = Object.keys(a).concat(Object.keys(b)).reduce(function(map, k) {
-      if (a[k] !== b[k]) {
-        return "no match"
+    for (let key in a) {
+      if (a.hasOwnProperty(key) && !b.hasOwnProperty(key)) {
+        // console.log('KEYS: ---------------------------', key);
+        result = "no match";
       }
-    }, {}) || "match"
+    }
     return result;
   }
 
-  componentWillReceiveProps(nextState) {
-    
 
+  componentWillReceiveProps(nextProps) {
+    // console.log('()()()()()()()()((((---', nextProps.bluetooth.hello);
+    // if (nextProps.bluetooth.hello == "helloString") {
+    //   let temp = Object.assign({}, this.state, {hello: nextProps.bluetooth.hello})
+    //   this.setState(temp)
+    // }
+    // if (nextProps.bluetooth.deviceObject) {
+    //   console.log('controller next state: ', nextProps.bluetooth.deviceObject);
+    // }
+    if (nextProps.myNav != this.state.nav)  {
+      let temp = Object.assign({}, this.state, {nav: nextProps.myNav})
+      this.setState(temp)
+    }
 
-    // if (nextState.bluetooth.deviceObject != null &&  this.state.deviceObject == null) {
-    //   console.log('updating device obj to have the goods: ', typeof nextState.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService);
-    //   var temp = Object.assign({}, this.state, {
-    //       deviceObject: nextState.bluetooth.deviceObject
-    //   })
-    //   this.setState(temp, () => {
-    //     this.forceUpdate()
-    //   })
-    // }
-    // else if (nextState.bluetooth.deviceObject != null &&  this.state.deviceObject != null) {
-    //   if (this.objectComparison(nextState.bluetooth.deviceObject, this.state.deviceObject) == "no match") {
-    //     var temp = Object.assign({}, this.state, {
-    //       deviceObject: nextState.bluetooth.deviceObject
-    //     })
-    //     console.log('will recieve props deviceobj: ', !!nextState.bluetooth.deviceObject);
-    //     this.setState(temp, () => {
-    //       this.forceUpdate()
-    //     })
-    //   }
-    // }
-    console.log('-------WILL recieve PROPS---');
-    for (let keys in nextState.bluetooth.deviceObject){
-      console.log('key: ', keys);
-    }
-    if (Object.keys(nextState.bluetooth.deviceObject).length > 0 && this.objectComparison(nextState.bluetooth.deviceObject, this.state.deviceObject) == "no match") {
+    // console.log('controller-WRP- ', typeof nextState.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService);
+    if (Object.keys(nextProps.bluetooth.deviceObject).length > 0 && this.objectComparison(nextProps.bluetooth.deviceObject, this.state.deviceObject) == "no match") {
       var temp = Object.assign({}, this.state, {
-        deviceObject: nextState.bluetooth.deviceObject
+        deviceObject: nextProps.bluetooth.deviceObject
       })
-      console.log('setting new device opject in -willrecieveprops-');
-      this.setState(temp, () => {
-        console.log('in callback: ');
-        for (let keys in temp.deviceObject){
-          console.log('key: ', keys);
-        }
-        this.forceUpdate()
-      })
+      // console.log('controler state should uppdate with ', typeof temp.deviceObject.writeCharacteristicWithoutResponseForService);
+      this.setState(temp, this.forceUpdate)
     }
-    if (nextState.bluetooth.writeCharacteristicUUID != this.state.writeCharacteristicUUID){
-      console.log('updating uuid for controller');
+    if (nextProps.bluetooth.writeCharacteristicUUID != this.state.writeCharacteristicUUID){
       var temp = Object.assign({}, this.state, {
-         writeCharacteristicUUID: nextState.bluetooth.writeCharacteristicUUID
+         writeCharacteristicUUID: nextProps.bluetooth.writeCharacteristicUUID
       })
       this.setState(temp, () => {
         this.forceUpdate()
       })
     }
-    if(nextState.bluetooth.writeServiceUUID != this.state.writeServiceUUID){
+    if(nextProps.bluetooth.writeServiceUUID != this.state.writeServiceUUID){
       var temp = Object.assign({}, this.state, {
-         writeServiceUUID: nextState.bluetooth.writeServiceUUID
+         writeServiceUUID: nextProps.bluetooth.writeServiceUUID
       })
-      console.log('temp serviceuuid: ', nextState.bluetooth.writeServiceUUID);
       this.setState(temp, () => {
         this.forceUpdate()
       })
     }
   }
 
-  componentDidUpdate(updated) {
-    console.log('----component did update------');
-    for (let keys in this.state.deviceObject) {
-      console.log('key:', keys);
+  componentWillUpdate(nextProps, nextState){
+    if (Object.keys(this.state.deviceObject).length > 0){
+      
+      // if (typeof nextProps.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService != typeof this.state.deviceOject.writeCharacteristicWithoutResponseForService) {
+      //   console.log('C-WillReceiveProps- ', nextProps.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService);
+      //   var temp = Object.assign({}, this.state, {deviceObject: nextProps.bluetooth.deviceObject})
+      //   this.setState(temp, () => {
+      //     this.forceUpdate()
+      //   })
+      // }
     }
+    
+    // console.log('WILL??---', nextState.deviceObject.writeCharacteristicWithoutResponseForService);
+  }
+  componentDidUpdate(prevProp, prevState) {
+    // console.log('- controller did update -');
+    if (Object.keys(this.state.deviceObject).length > 0){
+      // console.log(Object.keys(this.state.deviceObject));
+    }
+    // if (this.state.hello == "helloString") {
+    //   console.log("GOAL: ", this.state.hello);
+    // }
+    // console.log(this.state.nav.currentView);
+    // console.log('WINNER - ', this.state.deviceObject.writeCharacteristicWithoutResponseForService);
   }
 
   Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9+/=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/rn/g,"n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
 
-  // sendDataThroughService = (value, device = this.state.deviceObject, writeService = this.state.writeServiceUUID, writeChar = this.state.writeCharacteristicUUID) => {
-  //   value = value.toString()
-  //   var encodedString = btoa(value);
-  //   // var pattern = [255,255,255,250,250,250,240,240,240,230,230,230,100,100,100,0,0,0,1,1,1,13,13,13,6,6,6,7,7,8,8,8,100,100,100,255,255,255,250,250,250,240,240,240,230,230]
-  //   // for(let i=0; i< pattern.length; i++){
-  //     // var temp = btoa(pattern[i]);/
-  //     console.log('now seding the data with: ', typeof device);
-  //   if(device) {
-  //     console.log(writeChar);
-  //     console.log(writeService);
-  //     if (device == 'object') {
-  //       device.writeCharacteristicWithoutResponseForService(writeService, writeChar, encodedString).then((result)=>{
-  //         console.log(result);
-  //       }, (err)=>{
-  //         console.log(err);
-  //       })
-  //     }
-      
-  //   }
-
-  //   // }
-  // }
+  
   sendDataThroughService = (value, deviceObject, writeService, writeChar) => {
     // console.log('loggin keys in device obj');
     // for(let keys in this.state.deviceObject) {
@@ -186,7 +165,7 @@ class Controller extends Component {
     // for(let i=0; i< pattern.length; i++){
       // var temp = btoa(pattern[i]);/
     if(deviceObject) {
-      console.log('attempted to senddata');
+      // console.log('attempted to senddata');
       deviceObject.writeCharacteristicWithoutResponseForService(writeService, writeChar, encodedString).then((result)=>{
         console.log(result);
       }, (err)=>{
