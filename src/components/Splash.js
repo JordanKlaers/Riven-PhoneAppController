@@ -11,11 +11,8 @@ import {
   redirectForBluetoothConnection,
   scanInProgress,
   connected,
-  triggered,
   getSavedDeviceNames,
   setSelectedDevice,
-  splashTestAction,
-  connectFunction
 } from '../actions'
 import { AsyncStorage } from 'react-native';
 import SplashUtil from '../util/SplahUtil.js';
@@ -38,12 +35,10 @@ class Splash extends Component {
     this.setState = this.setState.bind(this);
     this.forceUpdate = this.forceUpdate.bind(this);    
     this.state = {                      //should be just the ones that i need to worry about changing
-      onSplashPage: props.bluetooth.onSplashPage,
       manager: props.bluetooth.manager,
       currentBluetoothState: props.bluetooth.subscription || null,
       defaultDevice: props.bluetooth.defaultDevice,
       dispatch: props.navigation.dispatch,
-      initiatedSetTimeout: false,
       connectedToDevice: props.bluetooth.connectedToDevice,
       dimensions: {},
       haveTriedToConnect: false,
@@ -60,10 +55,8 @@ class Splash extends Component {
   componentDidUpdate(state){
     var args ={
       currentView: this.state.currentView,
-      onSplashPage: this.state.onSplashPage,
       deviceBluetoothstate: this.state.deviceBluetoothstate,
       defaultDevice: this.state.defaultDevice,
-      initializedRedirect: this.state.initiatedSetTimeout,
       setState: this.setState,
       dispatch: this.state.dispatch,
       navigate: NavigationActions.navigate,
@@ -82,19 +75,14 @@ class Splash extends Component {
   }
 
   componentWillReceiveProps(nextState){
-    console.log('_____________SPLASH getting new props');
     SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
   }
 
   tookToLongToConnect = (currentView = this.state.currentView) => {
     if (currentView == 0) {
-      console.log('toolongtoconnectandcurrentviewwas0');
-      this.state.dispatch({
-        type: 'Redirect Is Triggered',
-        action: this.state.dispatch(NavigationActions.navigate({
-          routeName: 'bluetooth'
-        }))
-      })
+      this.state.dispatch(NavigationActions.navigate({
+            routeName: 'bluetooth'
+      }))
     }
   }
 

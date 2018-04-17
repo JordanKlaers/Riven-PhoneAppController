@@ -1,14 +1,8 @@
-export const splashTestAction = () => {
+export const TestAction = (count) => {
   console.log('inside action that is a problem');
   return {
-    type: 'splash test Action'
-  }
-}
-
-export const connectFunction = (fnc) => {
-  return {
-    type: 'connect function',
-    connectFunction: fnc
+    type: 'Test Action',
+    value: count
   }
 }
 
@@ -20,6 +14,12 @@ export const saveConnectionData = (connectionData, deviceObject, navigateAfterCo
     deviceObject,
     navigateAfterConnection
   }
+}
+
+export const clearConnectionData = () => {
+	return {
+		type: 'Clear Connection Data'
+	}
 }
 
 export const saveBluetoothState = (state) => {
@@ -71,22 +71,12 @@ export const setSelectedDevice = (name) => {
   }
 }
 
-// export const setDefaultDevice = (name) => {
-//   return {
-//     type: 'Set Default Device',
-//     name
-//   }
-// }
 
-export const scanInProgress = () => {
+
+export const scanInProgress = (status = 'In Progress') => {
   return {
-    type: 'Scan In Progress',
+    type: 'Scan Status',
+    status: status
   }
 }
 
-export const triggered = (state) => {
-  return {
-    type: 'Redirect Is Triggered',
-    state
-  }
-}

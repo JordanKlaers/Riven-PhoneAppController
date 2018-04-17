@@ -1,13 +1,10 @@
 import { NavigationActions } from 'react-navigation';
 import { AsyncStorage } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
-import { connectFunction } from '../actions';
-
 
       var manager = new BleManager();
       var bluetoothSubscription = null;
       var bluetooth = {
-        onSplashPage: true,
         manager: manager,
         deviceBluetoothstate: bluetoothSubscription,
         defaultDevice: "",           //currentDeviceName
@@ -16,35 +13,36 @@ import { connectFunction } from '../actions';
         allSavedDevices: [],         //the key == the device name for all
         deviceObject: {},
         splashtestprop: null,
-        deviceObject: {},
-        connectFunction: null,
+		deviceObject: null,
+		connectionData: null,
         navigateAfterConnection: false,
-        learning: 'nothing',
-        triggered: 'nothing'
+        count: 0
       }
 
   function BluetoothReducer(state= bluetooth, action) {
     switch (action.type) {
-      case "learningDispatch":
-      console.log('inside the learning dispatch function');
-        console.log('-------->' , action.learningDispatchObj);  
-      return Object.assign({}, state, action.learningDispatchObj)
-      case "connect function":
-        return Object.assign({}, state, {connectFunction: action.connectFunction})
+		case 'Test Action':
+		console.log('action.count', action.value);
+			let temp = Object.assign({}, state, {count: action.value});
+			return temp;
       case 'Save Connection Data':
-      console.log('reducer: saving connection data');
+	  console.log('reducer: saving connection data');
+	  console.log(action.connectionData);
         var result = Object.assign(
           {}, 
           state, {
             deviceObject: action.deviceObject,
             connectedToDevice: "Connected"
           }, 
-          action.connectionData, 
+          {connectionData: action.connectionData }, 
           {navigateAfterConnection: action.navigateAfterConnection || false}
         );
         // console.log('should include (reducer) ', action.navigateAfterConnection);
-        return result;
-      case 'Save Bluetooth State':
+		return result;
+	case 'Clear Connection Data':
+		var temp = Object.assign({}, state, { deviceObject: null, connectionData: null, connectedToDevice: "no connection" });
+		return temp;
+    case 'Save Bluetooth State':
 
         state.deviceBluetoothstate = action.state
         return { ...state };
@@ -77,9 +75,9 @@ import { connectFunction } from '../actions';
           AsyncStorage.setItem(action.deviceName, action.deviceName);
         }
         return result
-      case 'Scan In Progress':
+      case 'Scan Status':
         var result = Object.assign({}, state, {
-          connectedToDevice: "In Progress"
+          connectedToDevice: action.status
         });
         return result;
       case 'Redirect Is Triggered':
@@ -100,19 +98,7 @@ import { connectFunction } from '../actions';
           AsyncStorage.setItem('defaultDevice', "")
         }
         return result
-      case 'Not On Splash Page':
-        var result = Object.assign({}, state, {
-          onSplashPage: false
-        });
-        if (result.connectedToDevice == 'In Progress') {
-          result.connectedToDevice = 'No Connection';
-          result.manager.stopDeviceScan();
-          // result.manager.cancelDeviceConnection();
-        }
-        
-        return result;
       default:
-        state.FROMBLUETOOTh = "FROM BLUETOOTHER"
         return state;
      }
   }

@@ -10,7 +10,7 @@ import { StyleSheet,
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
-import { customAction } from '../actions';
+import { customAction, splashTestAction } from '../actions';
 // var btoa = require('Base64').btoa;
 import {
   atob,
@@ -46,10 +46,13 @@ class Controller extends Component {
           height: 0,
           width: 0
         },                  //should be just the ones that i need to worry about changing
-        deviceObject: props.bluetooth.deviceObject,
-        writeServiceUUID: props.bluetooth.writeServiceUUID,
-        writeCharacteristicUUID: props.bluetooth.writeCharacteristicUUID,
-        nav: props.myNav
+		deviceObject: props.bluetooth.deviceObject,
+		connectionData: props.bluetooth.connectionData,
+        // writeServiceUUID: props.bluetooth.writeServiceUUID,
+        // writeCharacteristicUUID: props.bluetooth.writeCharacteristicUUID,
+        nav: props.myNav,
+        dispatch: props.navigation.dispatch,
+        count: props.bluetooth.count
       }
     }
 
@@ -85,95 +88,72 @@ class Controller extends Component {
   }
 
 
-  componentWillReceiveProps(nextProps) {
-    // console.log('()()()()()()()()((((---', nextProps.bluetooth.hello);
-    // if (nextProps.bluetooth.hello == "helloString") {
-    //   let temp = Object.assign({}, this.state, {hello: nextProps.bluetooth.hello})
-    //   this.setState(temp)
-    // }
-    // if (nextProps.bluetooth.deviceObject) {
-    //   console.log('controller next state: ', nextProps.bluetooth.deviceObject);
-    // }
-    if (nextProps.myNav != this.state.nav)  {
-      let temp = Object.assign({}, this.state, {nav: nextProps.myNav})
-      this.setState(temp)
-    }
+  	componentWillReceiveProps(nextProps) {
+		if (nextProps.myNav != this.state.nav)  {
+			let temp = Object.assign({}, this.state, {nav: nextProps.myNav})
+			this.setState(temp)
+		}
+		if (nextProps.bluetooth.count != this.state.count)  {
+			let temp = Object.assign({}, this.state, {count: nextProps.bluetooth.count})
+			this.setState(temp)
+		}
+		if (nextProps.bluetooth.deviceObject == null) {
+			var temp = Object.assign({}, this.state, {
+				deviceObject: null
+			})
+			this.setState(temp, () => this.forceUpdate())
+		}
+		else if (Object.keys(nextProps.bluetooth.deviceObject).length > 0) {
+			var temp = Object.assign({}, this.state, {
+				deviceObject: nextProps.bluetooth.deviceObject
+			})
+			this.setState(temp, () => this.forceUpdate())
+		}
+		if (nextProps.bluetooth.connectionData == null) {
+			var temp = Object.assign({}, this.state, {
+				connectionData: null
+			});
+			this.setState(temp, () => {
+				this.forceUpdate()
+			})
+		}
+		else if (nextProps.bluetooth.connectionData != this.state.connectionData){
+			var temp = Object.assign({}, this.state, {
+				connectionData: nextProps.bluetooth.connectionData
+			});
+			this.setState(temp, () => {
+				this.forceUpdate()
+			})
+		}
+  	}
 
-    // console.log('controller-WRP- ', typeof nextState.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService);
-    if (Object.keys(nextProps.bluetooth.deviceObject).length > 0 && this.objectComparison(nextProps.bluetooth.deviceObject, this.state.deviceObject) == "no match") {
-      var temp = Object.assign({}, this.state, {
-        deviceObject: nextProps.bluetooth.deviceObject
-      })
-      // console.log('controler state should uppdate with ', typeof temp.deviceObject.writeCharacteristicWithoutResponseForService);
-      this.setState(temp, this.forceUpdate)
-    }
-    if (nextProps.bluetooth.writeCharacteristicUUID != this.state.writeCharacteristicUUID){
-      var temp = Object.assign({}, this.state, {
-         writeCharacteristicUUID: nextProps.bluetooth.writeCharacteristicUUID
-      })
-      this.setState(temp, () => {
-        this.forceUpdate()
-      })
-    }
-    if(nextProps.bluetooth.writeServiceUUID != this.state.writeServiceUUID){
-      var temp = Object.assign({}, this.state, {
-         writeServiceUUID: nextProps.bluetooth.writeServiceUUID
-      })
-      this.setState(temp, () => {
-        this.forceUpdate()
-      })
-    }
-  }
-
-  componentWillUpdate(nextProps, nextState){
-    if (Object.keys(this.state.deviceObject).length > 0){
-      
-      // if (typeof nextProps.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService != typeof this.state.deviceOject.writeCharacteristicWithoutResponseForService) {
-      //   console.log('C-WillReceiveProps- ', nextProps.bluetooth.deviceObject.writeCharacteristicWithoutResponseForService);
-      //   var temp = Object.assign({}, this.state, {deviceObject: nextProps.bluetooth.deviceObject})
-      //   this.setState(temp, () => {
-      //     this.forceUpdate()
-      //   })
-      // }
-    }
-    
-    // console.log('WILL??---', nextState.deviceObject.writeCharacteristicWithoutResponseForService);
-  }
   componentDidUpdate(prevProp, prevState) {
-    // console.log('- controller did update -');
-    if (Object.keys(this.state.deviceObject).length > 0){
-      // console.log(Object.keys(this.state.deviceObject));
+	// console.log('- controller did update -', Object.keys(this.statse.deviceObject).length);
+    if (this.props.bluetooth.deviceObject && this.state.deviceObject == null) {
+		console.log('controller did update but state obj and prop obj didnt match so setting state');
+		let connectionData = this.props.bluetooth.connectionData;
+		let deviceObject = this.props.bluetooth.deviceObject
+		this.state.dispatch({
+			type: 'Save Connection Data', 
+			connectionData, 
+			deviceObject
+		})
     }
-    // if (this.state.hello == "helloString") {
-    //   console.log("GOAL: ", this.state.hello);
-    // }
-    // console.log(this.state.nav.currentView);
-    // console.log('WINNER - ', this.state.deviceObject.writeCharacteristicWithoutResponseForService);
   }
 
   Base64={_keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9+/=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},_utf8_encode:function(e){e=e.replace(/rn/g,"n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},_utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}}
 
   
-  sendDataThroughService = (value, deviceObject, writeService, writeChar) => {
-    // console.log('loggin keys in device obj');
-    // for(let keys in this.state.deviceObject) {
-    //   console.log('key: ', keys);
-    // }
-    value = value.toString()
-    var encodedString = btoa(value);
-    // var pattern = [255,255,255,250,250,250,240,240,240,230,230,230,100,100,100,0,0,0,1,1,1,13,13,13,6,6,6,7,7,8,8,8,100,100,100,255,255,255,250,250,250,240,240,240,230,230]
-    // for(let i=0; i< pattern.length; i++){
-      // var temp = btoa(pattern[i]);/
-    if(deviceObject) {
-      // console.log('attempted to senddata');
-      deviceObject.writeCharacteristicWithoutResponseForService(writeService, writeChar, encodedString).then((result)=>{
-        console.log(result);
-      }, (err)=>{
-        console.log(err);
-      })
-    }
-
-    // }
+  	sendDataThroughService = (value, deviceObject, writeService, writeChar) => {
+    	value = value.toString()
+    	var encodedString = btoa(value);
+    	if(Object.keys(deviceObject).length > 0) {
+      		deviceObject.writeCharacteristicWithoutResponseForService(writeService, writeChar, encodedString).then((result)=>{
+        		console.log(result);
+      		}, (err)=>{
+        	console.log(err);
+      		})
+    	}
   }
   render(){
     return (
@@ -181,7 +161,7 @@ class Controller extends Component {
         <Text style={styles.welcome}>
           Controller Screen
         </Text>
-        <Slider maximumValue={360} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.sendDataThroughService(value, this.state.deviceObject, this.state.writeServiceUUID, this.state.writeCharacteristicUUID)}}>
+        <Slider maximumValue={360} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.sendDataThroughService(value, this.state.deviceObject, this.state.connectionData.writeServiceUUID, this.state.connectionData.writeCharacteristicUUID)}}>
         </Slider>
       </View>
     )

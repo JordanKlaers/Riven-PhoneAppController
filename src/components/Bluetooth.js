@@ -22,7 +22,9 @@ import {
   setSelectedDevice,
   saveDeviceNameTOStorage,
   saveConnectionData,
-  scanInProgress
+  scanInProgress,
+  TestAction,
+  clearConnectionData
 } from '../actions';
 import BluetoothUtil from '../util/BluetoothUtil.js';
 
@@ -63,15 +65,13 @@ class Bluetooth extends Component {
       defaultDevice: props.bluetooth.defaultDevice,
       toggelSelection: false,
       manager: props.bluetooth.manager,
-      dispatch: props.navigation.dispatch,
+      dispatch: props.dispatch,
       waitedForScan: false,
       deviceObject: props.bluetooth.deviceObject,
-      SplashDispatch: props.bluetooth.connectFunction,
       myNav: props.myNav,
-      onBluetoothPage: true,
-      navigateAfterConnection: props.bluetooth.navigateAfterConnection,
-      learning: 'nothing',
-      triggered: 'nothing'
+      currentView: props.myNav,
+      navigateAfterConnection: props.bluetooth.navigateAfterConnection,   
+      count: props.bluetooth.count 
     }
   }
   componentWillMount(){
@@ -93,23 +93,17 @@ class Bluetooth extends Component {
   }
 
   componentDidMount(state){
-    if(this.state.connectedToDevice == 'In Progress' && !this.state.waitedForScan) {
-          var temp = Object.assign({}, this.state, {
-              waitedForScan: true
-          });
-          this.setState(temp, ()=>{
-                  var temp = Object.assign({}, this.state, {
-                      connectedToDevice: "no connection"
-                  });
-                  this.setState(temp, ()=>{
-                      this.state.manager.stopDeviceScan();
-                  })
-          })
-      }
+    if(this.state.connectedToDevice == 'In Progress') {
+      var temp = Object.assign({}, this.state, {
+          connectedToDevice: "no connection"
+      });
+      this.setState(temp, ()=>{
+          this.state.manager.stopDeviceScan();
+      })
+    }
   }
   componentWillReceiveProps(nextState){
-    console.log('_________BLUETOOTH getting new props');
-    // console.log(nextState.myNav);
+    console.log('_________BLUETOOTH getting new props', nextState.bluetooth.count);
     this.count ++
     const args = {
       nextState: nextState,
@@ -118,32 +112,21 @@ class Bluetooth extends Component {
       forceUpdate: this.forceUpdate,
       state: this.state,
       manager: this.state.manager,
-      SplashDispatch: nextState.bluetooth.connectFunction,
       deviceObject: this.state.deviceObject,
       navigateAfterConnection: this.state.navigateAfterConnection,
-      doit: this.state.doit
+      currentView: this.state.currentView,
+      connectedToDevice: this.state.connectedToDevice,
+      count: this.state.count
     }
-    // if (nextState.bluetooth.navigateAfterConnection == true) {
-    //   this.state.dispatch({type: 'do it'})
-    // }
     this.connectionStatus(nextState.connectedToDevice);
     BluetoothUtil.pushUpdateState(args);
     
   }
 
   componentDidUpdate(prevProp, prevState) {
+    // console.log(this.state.currentView);
+    console.log('- bluetooth did update - ', this.props.bluetooth.count);
     // console.log('bluetooth----->  deviceobj keys', Object.keys(this.state.deviceObject).length);
-    // console.log('connected than?', this.state.connectedToDevice);
-    // console.log('but on BT page', this.state.onBluetoothPage);
-    // console.log('need to nav?', this.state.navigateAfterConnection);
-    // if (Object.keys(this.state.deviceObject).length > 0 && this.state.onBluetoothPage == true && this.state.navigateAfterConnection == true) {
-      // console.log('so should changepages');
-      // this.setState(Object.assign(this.state, {onBluetoothPage: false}, {navigateAfterConnection: false})), () => this.state.dispatch(NavigationActions.navigate({
-        // routeName: 'controller'
-      // }))
-    // }
-    // console.log('bluetooth-DU- ', typeof this.state.deviceObject.writeCharacteristicWithoutResponseForService);
-    // console.log('prev---', prevState.deviceObject.writeCharacteristicWithoutResponseForService);
   }
 
   navigationOptions = {
@@ -156,7 +139,7 @@ class Bluetooth extends Component {
 
   removeDevice = (name) => BluetoothUtil.removeDevice({name: name, state: this.state, setState: this.setState, dispatch: this.props.dispatch, delete: deleteDeviceNameFromStorage})
 
-  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({name: name, dispatch: this.props.dispatch, set: setSelectedDevice, tryToConnect: this.tryToConnect, forceUpdate: this.forceUpdate})
+  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({manager: this.state.manager, deviceObject: this.state.deviceObject, clearConnectionData: clearConnectionData, name: name, dispatch: this.props.dispatch, set: setSelectedDevice, tryToConnect: this.tryToConnect, forceUpdate: this.forceUpdate})
 
   connectionStatus = (connectedToDevice) =>  BluetoothUtil.connectionStatus(connectedToDevice)
 
@@ -168,99 +151,55 @@ class Bluetooth extends Component {
   }
 
   
-  tryToConnect = (name) => BluetoothUtil.tryToConnect({saveConnectionData: saveConnectionData, defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
-  // () => { 
-  //   // var temp = Object.assign({}, this.state, { testing: 'testing' })
-  //   // this.setState(temp, () => {console.log('bad', this.state.testing)} ) 
-  //   this.state.SplashDispatch()
-    
-  // };
-  // 
+  tryToConnect = (name) => BluetoothUtil.tryToConnect({clearConnectionData: clearConnectionData, tookToLongToConnect: this.tookToLongToConnect, saveConnectionData: saveConnectionData, defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
+  
   changeTab = () => {
-
-  this.state.dispatch({
-      type: 'hello',
-      action: this.state.dispatch(NavigationActions.navigate({
-          routeName: 'controller'
-      })),
-      addHello: 'helloString'
-  })
-    // console.log(NavigationActions.navigate({ routeName: 'controller', action: NavigationActions.navigate({ routeName: 'controller' })}));
-    // this.state.dispatch({ 
-    //   type: 'Navigation/NAVIGATE',
-    //   routeName: 'controller',
-    //   params: {
-    //     navigationParams: 'magic'
-    //   }
-    // });
-    // this.state.dispatch(NavigationActions.navigate({ routeName: 'controller', action: NavigationActions.navigate({ routeName: 'controller' })}));
+    console.log('-->', this.state.count + 1);
+    this.state.dispatch(TestAction((this.state.count + 1)));
+    // this.state.dispatch({
+    //     type: 'hello',
+    //     action: this.state.dispatch(NavigationActions.navigate({
+    //         routeName: 'controller'
+    //     })),
+    //     addHello: 'helloString'
+    // })
   }
 
-  // (deviceName, connectedToDevice, manager)=>{
-
-  //   var deviceConnectionInfo = {};
-  //   if(connectedToDevice == "No connection"){
-  //     manager.startDeviceScan(null, null, (error, device) => {
-  //       if(connectedToDevice != "In Progress"){
-  //         this.state.dispatch(scanInProgress())
-  //         var temp = Object.assign({}, this.state, {
-  //           connectedToDevice: "In Progress"
-  //         })
-  //         this.setState(temp)
-  //       }
-  //       if (error) {
-  //         return
-  //       }
-  //       if (device.name == this.state.defaultDevice) {  //should be 'raspberrypi'
-  //         var deviceObject = {};
-  //         manager.stopDeviceScan();
-  //         manager.connectToDevice(device.id)
-  //         .then((device) => {
-  //           deviceObject = device;
-  //           deviceConnectionInfo.device = device;
-  //           return device.discoverAllServicesAndCharacteristics();
-  //         })
-  //         .then((device) => {
-  //           deviceConnectionInfo.deviceID = device.id
-  //           return manager.servicesForDevice(device.id)
-  //         })
-  //         .then((services) => {
-  //           console.log("Services: ", services);
-  //           var service;
-  //           for(let i=0; i<services.length; i++) {
-  //             if(services[i].uuid == "ffffffff-ffff-ffff-ffff-fffffffffff0"){
-  //               service = services[i].uuid
-  //               console.log("got it:", service);
-  //             }
-  //           }
-  //           deviceConnectionInfo.writeServiceUUID = service
-  //           return manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-  //         })
-  //         .then((characteristic)=> {
-  //           deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-  //           this.state.dispatch(saveConnectionData(deviceConnectionInfo, deviceObject))
-  //           // var temp = Object.assign({}, this.state, {
-  //           //   connectedToDevice: "Connected"
-  //           // })
-  //           // this.setState(temp)
-  //         },
-  //         (error) => {
-
-  //         });
-  //       }
-  //     });
-  //   }
-
-  // }
 
   stopScan = () => {
-    var temp = Object.assign({}, this.state, {
-      connectedToDevice: "no connection"
-    });
+    // var temp = Object.assign({}, this.state, {
+    //   connectedToDevice: "no connection"
+    // });
+    console.log('stopscan button');
     this.state.manager.stopDeviceScan();
-    this.setState(temp)
+	this.state.dispatch(scanInProgress('no connection'))
+	if (this.state.deviceObject && this.state.deviceObject.hasOwnProperty('id')) {
+		this.state.manager.cancelDeviceConnection(this.state.deviceObject.id)
+		.then(() => {
+		  // Success code
+		  console.log('Disconnected');
+		})
+		.catch((error) => {
+		  // Failure code
+		  console.log('failed to disconnected');
+		  console.log(error);
+		});
+	}
+	this.state.dispatch(clearConnectionData());
+    // this.setState(temp)
   }
 
+  	tookToLongToConnect = (currentView = this.state.currentView) => {
+        if(this.state.connectedToDevice == 'In Progress') {
+        	var temp = Object.assign({}, this.state, {
+            	connectedToDevice: "no connection"
+          	});
+          	this.setState(temp, ()=>{
+				this.state.dispatch(scanInProgress('no connection'))
+            	this.state.manager.stopDeviceScan();
+          	})
+        }
+  	}
 
 
   render(){

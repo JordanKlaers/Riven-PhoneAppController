@@ -74,7 +74,6 @@ function autoConnect(args) {
 
 
 function pushUpdateState(nextState, state, setState, forceUpdate){
-    console.log('pushUpdateState!!!');
     if(nextState.bluetooth.defaultDevice != state.defaultDevice){   //update the default device to connect to
         var tempState = Object.assign({}, state, {
           defaultDevice: nextState.bluetooth.defaultDevice    
@@ -96,15 +95,6 @@ function pushUpdateState(nextState, state, setState, forceUpdate){
         // console.log('device connection status (setting state)');
         setState(tempState)
     }
-    if(nextState.bluetooth.onSplashPage != state.onSplashPage && nextState.bluetooth.onSplashPage != undefined) {
-        var tempState = Object.assign({}, state, {
-            onSplashPage: nextState.bluetooth.onSplashPage
-        });
-        // console.log('on splash page (setting state)');
-        setState(tempState, () => {
-            forceUpdate()
-        })
-    }
     if(nextState.myNav.index != state.currentView) {
         var tempState = Object.assign({}, state, {
             currentView: nextState.myNav.index
@@ -123,10 +113,6 @@ function tryToConnect(args) {
         if(args.connectedToDevice != "In Progress"){
             console.log('dispatch scan in progress then set state also');
             args.dispatch(args.scanInProgress())
-            var temp = Object.assign({}, this.state, {
-              connectedToDevice: "In Progress"
-            })
-            args.setState(temp)
           }
       args.manager.startDeviceScan(null, null, (error, device) => {        
         if (error) {
