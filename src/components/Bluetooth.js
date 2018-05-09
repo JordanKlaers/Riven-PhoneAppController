@@ -69,8 +69,7 @@ class Bluetooth extends Component {
       waitedForScan: false,
       deviceObject: props.bluetooth.deviceObject,
       myNav: props.myNav,
-      currentView: props.myNav,
-      navigateAfterConnection: props.bluetooth.navigateAfterConnection,   
+      currentView: props.myNav,  
       count: props.bluetooth.count 
     }
   }
@@ -92,7 +91,7 @@ class Bluetooth extends Component {
     })
   }
 
-  componentDidMount(state){
+  componentDidMount(state) {
     if(this.state.connectedToDevice == 'In Progress') {
       var temp = Object.assign({}, this.state, {
           connectedToDevice: "no connection"
@@ -103,7 +102,6 @@ class Bluetooth extends Component {
     }
   }
   componentWillReceiveProps(nextState){
-    console.log('_________BLUETOOTH getting new props', nextState.bluetooth.count);
     this.count ++
     const args = {
       nextState: nextState,
@@ -117,16 +115,13 @@ class Bluetooth extends Component {
       currentView: this.state.currentView,
       connectedToDevice: this.state.connectedToDevice,
       count: this.state.count
-    }
+	}
     this.connectionStatus(nextState.connectedToDevice);
     BluetoothUtil.pushUpdateState(args);
     
   }
 
   componentDidUpdate(prevProp, prevState) {
-    // console.log(this.state.currentView);
-    console.log('- bluetooth did update - ', this.props.bluetooth.count);
-    // console.log('bluetooth----->  deviceobj keys', Object.keys(this.state.deviceObject).length);
   }
 
   navigationOptions = {
@@ -154,24 +149,11 @@ class Bluetooth extends Component {
   tryToConnect = (name) => BluetoothUtil.tryToConnect({clearConnectionData: clearConnectionData, tookToLongToConnect: this.tookToLongToConnect, saveConnectionData: saveConnectionData, defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
   
   changeTab = () => {
-    console.log('-->', this.state.count + 1);
-    this.state.dispatch(TestAction((this.state.count + 1)));
-    // this.state.dispatch({
-    //     type: 'hello',
-    //     action: this.state.dispatch(NavigationActions.navigate({
-    //         routeName: 'controller'
-    //     })),
-    //     addHello: 'helloString'
-    // })
   }
 
 
   stopScan = () => {
-    // var temp = Object.assign({}, this.state, {
-    //   connectedToDevice: "no connection"
-    // });
-    console.log('stopscan button');
-    this.state.manager.stopDeviceScan();
+	this.state.manager.stopDeviceScan();
 	this.state.dispatch(scanInProgress('no connection'))
 	if (this.state.deviceObject && this.state.deviceObject.hasOwnProperty('id')) {
 		this.state.manager.cancelDeviceConnection(this.state.deviceObject.id)

@@ -5,21 +5,10 @@ import { NavigationActions } from 'react-navigation';
 function pushUpdateState(args){
 	if (args.nextState.bluetooth.count != args.count) {
 		var temp = Object.assign({}, args.state, {count: args.nextState.bluetooth.count})
-		console.log('???', temp.count);
 		args.setState(temp, () => {
 			args.forceUpdate();
 		})
 	}
-    // if (args.navigateAfterConnection != args.nextState.bluetooth.navigateAfterConnection) {
-    //     var temp = Object.assign({}, args.state, {
-    //         navigateAfterConnection: args.nextState.bluetooth.navigateAfterConnections
-    //     });
-    //     // console.log('updating navigateAfterConnection to:', args.nextState.bluetooth.navigateAfterConnection);
-    //     args.setState(temp, ()=>{
-    //         args.forceUpdate();
-    //     });
-    // }
-    // if (args.currentView !)
     if(args.deviceObject != args.nextState.bluetooth.deviceObject) {
         var temp = Object.assign({}, args.state, {
             deviceObject: args.nextState.bluetooth.deviceObject
@@ -53,12 +42,12 @@ function pushUpdateState(args){
         args.forceUpdate();
       });
     }
-    // if (args.nextState.waitedForScan != args.state.waitedForScan) {
-    //     var temp = Object.assign({}, args.state, {
-    //         waitedForScan: args.nextState.waitedForScan
-    //     });
-    //     args.setState(temp);
-    // }
+    if (args.nextState.bluetooth.manager != args.state.manager) {
+        var temp = Object.assign({}, args.state, {
+            manager: args.nextState.bluetooth.manager
+        });
+        args.setState(temp);
+    }
 
     // if(args.nextState.bluetooth.connectedToDevice == 'In Progress' && !args.state.waitedForScan) {
     //     var temp = Object.assign({}, args.state, {
@@ -130,9 +119,6 @@ function connectionStatus(connectToDevice) {
 }
 
 function tryToConnect(args, name) {
-	// if (args.connectedToDevice == "Connected") {
-	// 	args.dispatch(args.clearConnectionData());
-	// }
     var connectionData = {};
     var haveDispatched = false;
     if(args.connectedToDevice != "Connected"){
@@ -140,7 +126,6 @@ function tryToConnect(args, name) {
         	if(args.connectedToDevice != "In Progress"){
 				if (!haveDispatched) {
 					haveDispatched = true;
-					console.log('dispatching scan progress');
 					args.dispatch(args.scan())
 					setTimeout(() => {
 						args.tookToLongToConnect()
@@ -149,32 +134,26 @@ function tryToConnect(args, name) {
         	}	
         	if (error) {
           		return
-        	}
-			console.log('picking pu:', device.name);
-        	if (device.name == name) {  //should be 'raspberrypi'
+			}
+			console.log('device.name: ', device.name);
+			if (device.name == name) {  //should be 'raspberrypi'
+			console.log('found device');
 			  	var deviceObject = {};
           		args.manager.stopDeviceScan();
-          		args.manager.isDeviceConnected(device.id).then(function ugh(thing) {
-             		console.log('already connected?', thing);
-          		});
           		args.manager.connectToDevice(device.id)
           		.then((device) => {
-              		console.log('1. connected');
             		deviceObject = device;
             		connectionData.device = device;
             		return device.discoverAllServicesAndCharacteristics();
           		})
           		.then((device) => {
-              		console.log('2. discovery stuff');
             		connectionData.deviceID = device.id
             		return args.manager.servicesForDevice(device.id)
           		})
-          		.then((services) => {
-              		console.log('3. service stuff');
+          		.then((services) => {              		
             		var service = null;
             		for(let i=0; i<services.length; i++) {
               			if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
-                  			console.log('found the service uuid');
                 			service = services[i].uuid
               			}
             		}
@@ -184,16 +163,10 @@ function tryToConnect(args, name) {
           		.then((characteristic)=> {
             		if (characteristic[0]) {
                 		connectionData.writeCharacteristicUUID = characteristic[0].uuid
-                		// let connectionData = connectionData;
-                		let navigateAfterConnection = true
-
-                		// console.log('COPYTHIS: ', args.saveConnectionData(connectionData, deviceObject, navigateAfterConnection));
                 		args.dispatch({
                     		type: 'Save Connection Data', 
                     		connectionData, 
-                    		deviceObject, 
-                    		navigateAfterConnection
-                    		// action: args.dispatch(NavigationActions.navigate({routeName: 'controller'}))
+                    		deviceObject
 						})
             		}
             		else {

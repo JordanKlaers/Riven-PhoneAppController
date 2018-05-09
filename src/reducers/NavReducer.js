@@ -19,7 +19,6 @@ function NavReducer(state = thisOne, action) {
       );
       break;
     case 'controller':
-    // console.log('nav reducer yo :3 ______');
       nextState = AppNavigator.router.getStateForAction(
         NavigationActions.navigate({ routeName: 'controller'}),
         state

@@ -1,5 +1,4 @@
 export const TestAction = (count) => {
-  console.log('inside action that is a problem');
   return {
     type: 'Test Action',
     value: count
@@ -7,7 +6,6 @@ export const TestAction = (count) => {
 }
 
 export const saveConnectionData = (connectionData, deviceObject, navigateAfterConnection) => {
-  console.log('only once: (inside action)', navigateAfterConnection);
   return {
     type: 'Save Connection Data',
     connectionData,

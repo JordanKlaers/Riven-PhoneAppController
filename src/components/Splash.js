@@ -47,7 +47,7 @@ class Splash extends Component {
     }
   }
 
-  componentWillMount(){
+  componentWillMount() {
     SplashUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
     SplashUtil.loadDeviceNamesFromStorage(AsyncStorage, this.state.dispatch, this.state.defaultDevice, getSavedDeviceNames, setSelectedDevice)
   }
@@ -70,7 +70,7 @@ class Splash extends Component {
       forceUpdate: this.forceUpdate,
       currentView: this.state.currentView,
       tookToLongToConnect: this.tookToLongToConnect
-    }
+	}
     SplashUtil.autoConnect(args);
   }
 

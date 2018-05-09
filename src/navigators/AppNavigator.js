@@ -41,7 +41,6 @@ AppWithNavigationState.propTypes = {
 };
 
 const mapStateToProps = state => {
-  // console.log('state: ', state);
   return ({
     nav: state.NavReducer,
     bluetooth: state.BluetoothReducer
