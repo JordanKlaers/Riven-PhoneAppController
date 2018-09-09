@@ -91,16 +91,18 @@ class Bluetooth extends Component {
     })
   }
 
-  componentDidMount(state) {
-    if(this.state.connectedToDevice == 'In Progress') {
-      var temp = Object.assign({}, this.state, {
-          connectedToDevice: "no connection"
-      });
-      this.setState(temp, ()=>{
-          this.state.manager.stopDeviceScan();
-      })
-    }
-  }
+  	componentDidMount(state) {
+		console.log('did mount with - ---- -', this.props.bluetooth.connectedToDevice);
+		if(this.props.bluetooth.connectedToDevice == 'In Progress') {
+			this.props.dispatch(scanInProgress('no connection'))
+			var temp = Object.assign({}, this.state, {
+				connectedToDevice: "no connection"
+			});
+			this.setState(temp, ()=>{
+				this.state.manager.stopDeviceScan();
+			})
+		}
+  	}
   componentWillReceiveProps(nextState){
     this.count ++
     const args = {
@@ -146,7 +148,7 @@ class Bluetooth extends Component {
   }
 
   
-  tryToConnect = (name) => BluetoothUtil.tryToConnect({clearConnectionData: clearConnectionData, tookToLongToConnect: this.tookToLongToConnect, saveConnectionData: saveConnectionData, defaultDevice: this.state.defaultDevice, connectedToDevice: this.state.connectedToDevice, manager: this.state.manager, dispatch: this.state.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
+  tryToConnect = (name) => BluetoothUtil.tryToConnect({clearConnectionData: clearConnectionData, tookToLongToConnect: this.tookToLongToConnect, saveConnectionData: saveConnectionData, defaultDevice: this.props.bluetooth.defaultDevice, connectedToDevice: this.props.bluetooth.connectedToDevice, manager: this.props.bluetooth.manager, dispatch: this.props.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
   
   changeTab = () => {
   }
@@ -301,7 +303,7 @@ class Bluetooth extends Component {
                   <View style={style.upRight.right}>
                     <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.stopScan()}}>
                       <Text style={style.upRight.bluetoothText}>
-                        {this.state.connectedToDevice}
+                        {this.props.bluetooth.connectedToDevice}
                       </Text>
                     </TouchableHighlight>
                   </View>

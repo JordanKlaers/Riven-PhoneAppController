@@ -66,21 +66,21 @@ function pushUpdateState(args){
     // }
 }
 
-function bluetoothListener(manager, state, bluetoothState, dispatch, saveBluetoothState) {
+function bluetoothListener(manager, bluetoothState, dispatch, saveBluetoothState) {
     manager.onStateChange((deviceBluetoothstate) => {
         if (deviceBluetoothstate === 'PoweredOn') {
-          if(bluetoothState == false || bluetoothState == null){
-			bluetoothState = true;
-            dispatch(saveBluetoothState(bluetoothState))
-          }
+          	if(bluetoothState == false || bluetoothState == null){
+				bluetoothState = true;
+            	dispatch(saveBluetoothState(bluetoothState))
+          	}
         }
         else {
-          if(bluetoothState == true || bluetoothState == null){
-			bluetoothState = false;
-            dispatch(saveBluetoothState(bluetoothState))
-          }
+          	if(bluetoothState == true || bluetoothState == null){
+				bluetoothState = false;
+            	dispatch(saveBluetoothState(bluetoothState))
+    		}
         }
-      }, true);
+    }, true);
 };
 
 
@@ -130,6 +130,7 @@ function selectDefaultDevice(args) {
 }
 
 function connectionStatus(connectToDevice) {
+	console.log('connection status');
     if(connectToDevice === "In Progress"){
         return connectToDevice;
     }
@@ -141,11 +142,15 @@ function connectionStatus(connectToDevice) {
 function tryToConnect(args, name) {
 	var haveDispatched = false;
 	console.log('trying to connect');
+	console.log('what is ->', args.connectedToDevice);
     if(args.connectedToDevice != "Connected"){
         args.manager.startDeviceScan(null, null, (error, device) => {
+			console.log('what is it now ->', args.connectedToDevice);
         	if(args.connectedToDevice != "In Progress") {
+				console.log('not in progress yet');
 				if (!haveDispatched) {
 					haveDispatched = true;
+					console.log('setting to in progress');
 					args.dispatch(args.scan())
 					setTimeout(() => {
 						args.tookToLongToConnect()

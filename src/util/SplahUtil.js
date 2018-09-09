@@ -1,21 +1,5 @@
 import { NavigationActions } from 'react-navigation';
 import bluetoothUtil from "./BluetoothUtil";
-// function bluetoothListener(manager, state, bluetoothState, dispatch, saveBluetoothState) {
-//     manager.onStateChange((deviceBluetoothstate) => {
-//         if (deviceBluetoothstate === 'PoweredOn') {
-//           if(bluetoothState == false || bluetoothState == null){
-// 			bluetoothState = true;
-//             dispatch(saveBluetoothState(bluetoothState))
-//           }
-//         }
-//         else {
-//           if(bluetoothState == true || bluetoothState == null){
-// 			bluetoothState = false;
-//             dispatch(saveBluetoothState(bluetoothState))
-//           }
-//         }
-//       }, true);
-// };
 
 function loadDeviceNamesFromStorage(deviceStorage, dispatch, defaultDevice, getSavedDeviceNames, setSelectedDevice) {
 
@@ -71,36 +55,6 @@ function autoConnect(args) {
 }
 
 
-function pushUpdateState(nextState, state, setState, forceUpdate){
-	if(nextState.bluetooth.defaultDevice != state.defaultDevice){   //update the default device to connect to
-		console.log('next and current differ for bluetooth state', nextState.bluetooth.defaultDevice);
-        var tempState = Object.assign({}, state, {
-          defaultDevice: nextState.bluetooth.defaultDevice    
-        });
-        setState(tempState)
-    }
-    if(nextState.bluetooth.deviceBluetoothstate != state.deviceBluetoothstate){ //update the bluetoothstate
-        var tempState = Object.assign({}, state, {
-          deviceBluetoothstate: nextState.bluetooth.deviceBluetoothstate
-        });
-        setState(tempState)
-    }
-    if(nextState.bluetooth.connectedToDevice != state.connectedToDevice){ // update statu of connection to external device
-        var tempState = Object.assign({}, state, {
-            connectedToDevice: nextState.bluetooth.connectedToDevice
-        });
-        setState(tempState)
-    }
-    if(nextState.myNav.index != state.currentView) {
-        var tempState = Object.assign({}, state, {
-            currentView: nextState.myNav.index
-        });
-        
-        setState(tempState, () => {
-            forceUpdate()
-        })
-    }
-}
 
 function tryToConnect(args) {
     var deviceConnectionInfo = {};
@@ -112,8 +66,8 @@ function tryToConnect(args) {
         	if (error) {
           		return
 			}
-			// console.log('device name: ', device.name);
-			let scannedName = device.name || "";
+			let scannedName = '"'; //forcing splash to not work to test
+			// device.name || "";
 			if (scannedName.toLowerCase() == args.defaultDevice.toLowerCase()) {  //should be 'raspberrypi'
 				console.log('found device');
 				bluetoothUtil.saveBluetoothDeviceInformation(args, device);
@@ -124,8 +78,6 @@ function tryToConnect(args) {
 
 
 export default {
-    // bluetoothListener,
     loadDeviceNamesFromStorage,
-    autoConnect,
-    pushUpdateState
+    autoConnect
 };

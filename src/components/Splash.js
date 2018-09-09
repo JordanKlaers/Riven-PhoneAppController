@@ -47,39 +47,39 @@ class Splash extends Component {
   }
 
   componentWillMount() {
-    BluetoothUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
+    BluetoothUtil.bluetoothListener(this.props.bluetooth.manager, this.props.bluetooth.subscription, this.props.navigation.dispatch, saveBluetoothState);
     SplashUtil.loadDeviceNamesFromStorage(AsyncStorage, this.state.dispatch, this.state.defaultDevice, getSavedDeviceNames, setSelectedDevice)
   }
 
 	componentDidUpdate(state){
     	var args = {
-    		currentView: this.state.currentView,
-      		deviceBluetoothstate: this.state.deviceBluetoothstate,
-      		defaultDevice: this.state.defaultDevice,
+    		currentView: this.props.myNav.index,
+      		deviceBluetoothstate: this.props.bluetooth.deviceBluetoothstate,
+      		defaultDevice: this.props.bluetooth.defaultDevice,
       		setState: this.setState,
-      		dispatch: this.state.dispatch,
+      		dispatch: this.props.navigation.dispatch,
       		navigate: NavigationActions.navigate,
-      		connectedToDevice: this.state.connectedToDevice,
+      		connectedToDevice: this.props.bluetooth.connectedToDevice,
       		haveTriedToConnect: this.state.haveTriedToConnect,
       		tryToConnect: this.tryToConnect,
-      		manager: this.state.manager,
+      		manager: this.props.bluetooth.manager,
       		state: this.state,
       		scanInProgress: scanInProgress,
       		saveConnectionData: saveConnectionData,
       		forceUpdate: this.forceUpdate,
-      		currentView: this.state.currentView,
       		tookToLongToConnect: this.tookToLongToConnect
 		}
     	SplashUtil.autoConnect(args);
   	}
 
   	componentWillReceiveProps(nextState){
+		  //console.log('will recieve -> device bluetooth state ->', nextState.bluetooth.deviceBluetoothstate);
 	  	//documents say to use this function to react to prop changes before render function
 		//calling setState will not trigger rerender
-		SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
+		// SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
   	}
 
-  tookToLongToConnect = (currentView = this.state.currentView) => {
+  tookToLongToConnect = (currentView = this.props.myNav.index) => {
     if (currentView == 0) {
       this.state.dispatch(NavigationActions.navigate({
             routeName: 'bluetooth'
@@ -95,7 +95,7 @@ class Splash extends Component {
   render() {
     return (
       <View>
-        <Text style={{margin: '40%'}}>{this.state.connectedToDevice}</Text>
+        <Text style={{margin: '40%'}}>{this.props.bluetooth.connectedToDevice}</Text>
         <Text>{this.state.scannedDeviceName}</Text>
       </View>
     );
