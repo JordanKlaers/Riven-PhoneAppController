@@ -66,6 +66,26 @@ function pushUpdateState(args){
     // }
 }
 
+function bluetoothListener(manager, state, bluetoothState, dispatch, saveBluetoothState) {
+    manager.onStateChange((deviceBluetoothstate) => {
+        if (deviceBluetoothstate === 'PoweredOn') {
+          if(bluetoothState == false || bluetoothState == null){
+			bluetoothState = true;
+            dispatch(saveBluetoothState(bluetoothState))
+          }
+        }
+        else {
+          if(bluetoothState == true || bluetoothState == null){
+			bluetoothState = false;
+            dispatch(saveBluetoothState(bluetoothState))
+          }
+        }
+      }, true);
+};
+
+
+
+
 function updateText(args) {
     var tempState = Object.assign({}, args.state, {
         textInput: args.input
@@ -119,66 +139,72 @@ function connectionStatus(connectToDevice) {
 }
 
 function tryToConnect(args, name) {
-    var connectionData = {};
-    var haveDispatched = false;
+	var haveDispatched = false;
+	console.log('trying to connect');
     if(args.connectedToDevice != "Connected"){
         args.manager.startDeviceScan(null, null, (error, device) => {
-        	if(args.connectedToDevice != "In Progress"){
+        	if(args.connectedToDevice != "In Progress") {
 				if (!haveDispatched) {
 					haveDispatched = true;
 					args.dispatch(args.scan())
 					setTimeout(() => {
 						args.tookToLongToConnect()
-					}, 2000);
+					}, 5000);
 				}
         	}	
         	if (error) {
           		return
 			}
 			console.log('device.name: ', device.name);
-			if (device.name == name) {  //should be 'raspberrypi'
-			console.log('found device');
-			  	var deviceObject = {};
-          		args.manager.stopDeviceScan();
-          		args.manager.connectToDevice(device.id)
-          		.then((device) => {
-            		deviceObject = device;
-            		connectionData.device = device;
-            		return device.discoverAllServicesAndCharacteristics();
-          		})
-          		.then((device) => {
-            		connectionData.deviceID = device.id
-            		return args.manager.servicesForDevice(device.id)
-          		})
-          		.then((services) => {              		
-            		var service = null;
-            		for(let i=0; i<services.length; i++) {
-              			if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
-                			service = services[i].uuid
-              			}
-            		}
-            		connectionData.writeServiceUUID = service
-            		return args.manager.characteristicsForDevice(connectionData.deviceID, connectionData.writeServiceUUID)
-          		})
-          		.then((characteristic)=> {
-            		if (characteristic[0]) {
-                		connectionData.writeCharacteristicUUID = characteristic[0].uuid
-                		args.dispatch({
-                    		type: 'Save Connection Data', 
-                    		connectionData, 
-                    		deviceObject
-						})
-            		}
-            		else {
-              			console.log("retrieving connection data failed when pairing with the device");
-            		}
-          		},
-          		(error) => {
-
-          		});
+			let scannedName = device.name || "";
+			if (scannedName.toLowerCase() == name.toLowerCase()) {  //should be 'raspberrypi'
+				console.log('found device');
+				saveBluetoothDeviceInformation(args, device);
         	}
       	});
     }
+}
+
+function saveBluetoothDeviceInformation(args, device) {
+	var deviceObject = {};
+	var connectionData = {};
+	args.manager.stopDeviceScan();
+    args.manager.connectToDevice(device.id)
+	.then((device) => {
+		deviceObject = device;
+		connectionData.device = device;
+		return device.discoverAllServicesAndCharacteristics();
+	})
+	.then((device) => {
+		connectionData.deviceID = device.id
+		return args.manager.servicesForDevice(device.id);
+	})
+	.then((services) => {              		
+		var service = null;
+		for(let i=0; i<services.length; i++) {
+			if(services[i].uuid == "0000ffe0-0000-1000-8000-00805f9b34fb" && service == null){
+				service = services[i].uuid;
+			}
+		}
+		connectionData.writeServiceUUID = service
+		return args.manager.characteristicsForDevice(connectionData.deviceID, connectionData.writeServiceUUID)
+		})
+	.then((characteristic)=> {
+		if (characteristic[0]) {
+			connectionData.writeCharacteristicUUID = characteristic[0].uuid
+			args.dispatch({
+				type: 'Save Connection Data', 
+				connectionData, 
+				deviceObject
+			})
+		}
+		else {
+			console.log("retrieving connection data failed when pairing with the device");
+		}
+	},
+	(error) => {
+
+	});
 }
 
 export default {
@@ -188,5 +214,7 @@ export default {
     removeDevice,
     selectDefaultDevice,
     connectionStatus,
-    tryToConnect
+	tryToConnect,
+	bluetoothListener,
+	saveBluetoothDeviceInformation
 };

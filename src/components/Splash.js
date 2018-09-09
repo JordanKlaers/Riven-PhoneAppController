@@ -16,6 +16,7 @@ import {
 } from '../actions'
 import { AsyncStorage } from 'react-native';
 import SplashUtil from '../util/SplahUtil.js';
+import BluetoothUtil from '../util/BluetoothUtil.js';
 
 const styles = StyleSheet.create({
   welcome: {
@@ -29,8 +30,6 @@ const styles = StyleSheet.create({
 class Splash extends Component {
 
   constructor(props) {
-    
-    
     super(props)
     this.setState = this.setState.bind(this);
     this.forceUpdate = this.forceUpdate.bind(this);    
@@ -48,35 +47,37 @@ class Splash extends Component {
   }
 
   componentWillMount() {
-    SplashUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
+    BluetoothUtil.bluetoothListener(this.state.manager, this.state, this.state.currentBluetoothState, this.state.dispatch, saveBluetoothState);
     SplashUtil.loadDeviceNamesFromStorage(AsyncStorage, this.state.dispatch, this.state.defaultDevice, getSavedDeviceNames, setSelectedDevice)
   }
 
-  componentDidUpdate(state){
-    var args ={
-      currentView: this.state.currentView,
-      deviceBluetoothstate: this.state.deviceBluetoothstate,
-      defaultDevice: this.state.defaultDevice,
-      setState: this.setState,
-      dispatch: this.state.dispatch,
-      navigate: NavigationActions.navigate,
-      connectedToDevice: this.state.connectedToDevice,
-      haveTriedToConnect: this.state.haveTriedToConnect,
-      tryToConnect: this.tryToConnect,
-      manager: this.state.manager,
-      state: this.state,
-      scanInProgress: scanInProgress,
-      saveConnectionData: saveConnectionData,
-      forceUpdate: this.forceUpdate,
-      currentView: this.state.currentView,
-      tookToLongToConnect: this.tookToLongToConnect
-	}
-    SplashUtil.autoConnect(args);
-  }
+	componentDidUpdate(state){
+    	var args = {
+    		currentView: this.state.currentView,
+      		deviceBluetoothstate: this.state.deviceBluetoothstate,
+      		defaultDevice: this.state.defaultDevice,
+      		setState: this.setState,
+      		dispatch: this.state.dispatch,
+      		navigate: NavigationActions.navigate,
+      		connectedToDevice: this.state.connectedToDevice,
+      		haveTriedToConnect: this.state.haveTriedToConnect,
+      		tryToConnect: this.tryToConnect,
+      		manager: this.state.manager,
+      		state: this.state,
+      		scanInProgress: scanInProgress,
+      		saveConnectionData: saveConnectionData,
+      		forceUpdate: this.forceUpdate,
+      		currentView: this.state.currentView,
+      		tookToLongToConnect: this.tookToLongToConnect
+		}
+    	SplashUtil.autoConnect(args);
+  	}
 
-  componentWillReceiveProps(nextState){
-    SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
-  }
+  	componentWillReceiveProps(nextState){
+	  	//documents say to use this function to react to prop changes before render function
+		//calling setState will not trigger rerender
+		SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
+  	}
 
   tookToLongToConnect = (currentView = this.state.currentView) => {
     if (currentView == 0) {

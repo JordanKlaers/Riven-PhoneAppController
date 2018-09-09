@@ -1,21 +1,21 @@
 import { NavigationActions } from 'react-navigation';
-
-function bluetoothListener(manager, state, bluetoothState, dispatch, saveBluetoothState) {
-    manager.onStateChange((deviceBluetoothstate) => {
-        if (deviceBluetoothstate === 'PoweredOn') {
-          if(bluetoothState == false || bluetoothState == null){
-			bluetoothState = true;
-            dispatch(saveBluetoothState(bluetoothState))
-          }
-        }
-        else {
-          if(bluetoothState == true || bluetoothState == null){
-			bluetoothState = false;
-            dispatch(saveBluetoothState(bluetoothState))
-          }
-        }
-      }, true);
-};
+import bluetoothUtil from "./BluetoothUtil";
+// function bluetoothListener(manager, state, bluetoothState, dispatch, saveBluetoothState) {
+//     manager.onStateChange((deviceBluetoothstate) => {
+//         if (deviceBluetoothstate === 'PoweredOn') {
+//           if(bluetoothState == false || bluetoothState == null){
+// 			bluetoothState = true;
+//             dispatch(saveBluetoothState(bluetoothState))
+//           }
+//         }
+//         else {
+//           if(bluetoothState == true || bluetoothState == null){
+// 			bluetoothState = false;
+//             dispatch(saveBluetoothState(bluetoothState))
+//           }
+//         }
+//       }, true);
+// };
 
 function loadDeviceNamesFromStorage(deviceStorage, dispatch, defaultDevice, getSavedDeviceNames, setSelectedDevice) {
 
@@ -107,59 +107,24 @@ function tryToConnect(args) {
     if(args.connectedToDevice != "Connected"){
         if(args.connectedToDevice != "In Progress"){
             args.dispatch(args.scanInProgress())
-          }
-      args.manager.startDeviceScan(null, null, (error, device) => {        
-        if (error) {
-          return
         }
-		if (device.name == args.defaultDevice) {  //should be 'raspberrypi'
-		console.log('found device', device );
-          var deviceObject = {};
-          args.manager.stopDeviceScan();
-          args.manager.connectToDevice(device.id)
-          .then((device) => {
-			  console.log('connected to device');
-            deviceObject = device;
-            deviceConnectionInfo.device = device;
-            return device.discoverAllServicesAndCharacteristics();
-          })
-          .then((device) => {
-			  console.log('discovered stuff');
-            deviceConnectionInfo.deviceID = device.id
-            return args.manager.servicesForDevice(device.id)
-          })
-          .then((services) => {
-			  console.log('found services');
-            var service = null;
-            for(let i=0; i<services.length; i++) {
-              if(services[i].uuid == "00112233-4455-6677-8899-aabbccddeeff" && service == null){
-                service = services[i].uuid
-              }
-            }
-            deviceConnectionInfo.writeServiceUUID = service
-            return args.manager.characteristicsForDevice(deviceConnectionInfo.deviceID, deviceConnectionInfo.writeServiceUUID)
-          })
-          .then((characteristic)=> {
-			  console.log('got characteristics and were good to go');
-            if (characteristic[0]) {
-              deviceConnectionInfo.writeCharacteristicUUID = characteristic[0].uuid
-              args.dispatch(args.saveConnectionData(deviceConnectionInfo, deviceObject))
-            }
-            else {
-              console.log("retrieving connection data failed when pairing with the device");
-            }
-          },
-          (error) => {
-
-          });
-        }
-      });
+      	args.manager.startDeviceScan(null, null, (error, device) => {        
+        	if (error) {
+          		return
+			}
+			// console.log('device name: ', device.name);
+			let scannedName = device.name || "";
+			if (scannedName.toLowerCase() == args.defaultDevice.toLowerCase()) {  //should be 'raspberrypi'
+				console.log('found device');
+				bluetoothUtil.saveBluetoothDeviceInformation(args, device);
+        	}
+      	});
     }
 }
 
 
 export default {
-    bluetoothListener,
+    // bluetoothListener,
     loadDeviceNamesFromStorage,
     autoConnect,
     pushUpdateState

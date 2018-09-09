@@ -151,8 +151,11 @@ class Controller extends Component {
 		while (value.length < 4) {
 			value = "0" + value;
 		}
+		console.log('value ->', value);
 		let encodedString = btoa(value);
 		if(Object.keys(deviceObject).length > 0) {
+			// console.log('sending', writeService, writeChar, encodedString);
+			// deviceObject.writeCharacteristicWithResponseForService(writeService, writeChar, encodedString);
 			deviceObject.writeCharacteristicWithoutResponseForService(writeService, writeChar, encodedString);
 		}
 	}
