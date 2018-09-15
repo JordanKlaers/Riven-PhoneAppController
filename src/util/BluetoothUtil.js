@@ -2,64 +2,6 @@ import { AsyncStorage } from 'react-native';
 import { AppNavigator } from '../navigators/AppNavigator';
 import { NavigationActions } from 'react-navigation';
 
-function pushUpdateState(args){
-    if(args.deviceObject != args.nextState.bluetooth.deviceObject) {
-        var temp = Object.assign({}, args.state, {
-            deviceObject: args.nextState.bluetooth.deviceObject
-          });
-          args.setState(temp, ()=>{
-            args.forceUpdate();
-          });  
-    }
-    if(args.nextState.bluetooth.allSavedDevices != args.state.allSavedDevices){
-      var temp = Object.assign({}, args.state, {
-        allSavedDevices: args.nextState.bluetooth.allSavedDevices
-      });
-      args.setState(temp, ()=>{
-        args.forceUpdate();
-      });
-    }
-    if(args.nextState.bluetooth.defaultDevice != args.state.defaultDevice) {
-      var temp = Object.assign({}, args.state, {
-        defaultDevice: args.nextState.bluetooth.defaultDevice
-      });
-      if(!args.state.allSavedDevices.includes(args.nextState.bluetooth.defaultDevice) && args.nextState.bluetooth.defaultDevice != ""){
-        temp.allSavedDevices.push(args.nextState.bluetooth.defaultDevice);
-      }
-      args.setState(temp);
-    }
-    if(args.nextState.bluetooth.connectedToDevice != args.state.connectedToDevice) {
-      var temp = Object.assign({}, this.state, {
-        connectedToDevice: args.nextState.bluetooth.connectedToDevice
-      });
-      args.setState(temp, () => {
-        args.forceUpdate();
-      });
-    }
-    if (args.nextState.bluetooth.manager != args.state.manager) {
-        var temp = Object.assign({}, args.state, {
-            manager: args.nextState.bluetooth.manager
-        });
-        args.setState(temp);
-    }
-
-    // if(args.nextState.bluetooth.connectedToDevice == 'In Progress' && !args.state.waitedForScan) {
-    //     var temp = Object.assign({}, args.state, {
-    //         waitedForScan: true
-    //     });
-    //     args.setState(temp, ()=>{
-    //         setTimeout(()=>{
-    //             var temp = Object.assign({}, args.state, {
-    //                 connectedToDevice: "no connection"
-    //             });
-    //             args.setState(temp, ()=>{
-    //                 args.manager.stopDeviceScan();
-    //             })
-    //         },2000)
-    //     })
-    // }
-}
-
 function bluetoothListener(manager, bluetoothState, dispatch, saveBluetoothState) {
     manager.onStateChange((deviceBluetoothstate) => {
         if (deviceBluetoothstate === 'PoweredOn') {
@@ -194,7 +136,6 @@ function saveBluetoothDeviceInformation(args, device) {
 }
 
 export default {
-    pushUpdateState,
     updateText,
     saveNewDevice,
     removeDevice,

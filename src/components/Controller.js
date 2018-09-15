@@ -12,24 +12,23 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { AppNavigator } from '../navigators/AppNavigator';
 import { customAction, splashTestAction } from '../actions';
-// var btoa = require('Base64').btoa;
 import {
   atob,
   btoa
 } from 'b2a';
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-  },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
-  },
+  	container: {
+	    flex: 1,
+	    justifyContent: 'center',
+	    alignItems: 'center',
+   		backgroundColor: '#F5FCFF',
+  	},
+  	welcome: {
+	    fontSize: 20,
+	    textAlign: 'center',
+	    margin: 10,
+  	}
 });
 
 
@@ -38,54 +37,52 @@ const styles = StyleSheet.create({
 class Controller extends Component {
 
     constructor(props) {
-      super(props)
-      this.setState = this.setState.bind(this);
-      this.forceUpdate = this.forceUpdate.bind(this);
-      this.state = {
-        screenDIM: {
-          isVerticle: true,
-          height: 0,
-          width: 0
-        },                  //should be just the ones that i need to worry about changing
-		deviceObject: props.bluetooth.deviceObject,
-		connectionData: props.bluetooth.connectionData,
-        // writeServiceUUID: props.bluetooth.writeServiceUUID,
-        // writeCharacteristicUUID: props.bluetooth.writeCharacteristicUUID,
-        nav: props.myNav,
-        dispatch: props.navigation.dispatch,
-		count: props.bluetooth.count
-      }
+    	super(props)
+      	this.setState = this.setState.bind(this);
+      	this.forceUpdate = this.forceUpdate.bind(this);
+      	this.state = {
+	        screenDIM: {
+          		isVerticle: true,
+          		height: 0,
+          		width: 0
+        	},                  //should be just the ones that i need to worry about changing
+			deviceObject: props.bluetooth.deviceObject,
+			connectionData: props.bluetooth.connectionData,
+        	nav: props.myNav,
+        	dispatch: props.navigation.dispatch,
+			count: props.bluetooth.count
+      	}
     }
 
 
 
-  componentDidMount() {
-    var temp = Object.assign({}, this.state)
-    var result = Dimensions.get("screen")
-    temp.screenDIM.height = result.height
-    temp.screenDIM.width = result.width
-    temp.screenDIM.isVerticle = (result.height > result.width) ? true : false;
-    this.setState(temp)
-    Dimensions.addEventListener("change", (object)=>{
-      var tempState = Object.assign({}, this.state, {
-        screenDIM: {
-          height: object.screen.height,
-          width: object.screen.width
-        }
-      })
-      this.setState(tempState)
-    })
-  }
+  	componentDidMount() {
+    	var temp = Object.assign({}, this.state)
+    	var result = Dimensions.get("screen")
+    	temp.screenDIM.height = result.height
+    	temp.screenDIM.width = result.width
+    	temp.screenDIM.isVerticle = (result.height > result.width) ? true : false;
+    	this.setState(temp)
+    	Dimensions.addEventListener("change", (object)=>{
+      		var tempState = Object.assign({}, this.state, {
+        		screenDIM: {
+          			height: object.screen.height,
+          			width: object.screen.width
+        		}
+      		})
+      		this.setState(tempState)
+    	})
+  	}
 
-  objectComparison = (a, b) => {
-    var result = "match";
-    for (let key in a) {
-      if (a.hasOwnProperty(key) && !b.hasOwnProperty(key)) {
-        result = "no match";
-      }
-    }
-    return result;
-  }
+  	objectComparison = (a, b) => {
+    	var result = "match";
+    	for (let key in a) {
+      		if (a.hasOwnProperty(key) && !b.hasOwnProperty(key)) {
+        		result = "no match";
+      		}
+    	}
+    	return result;
+  	}
 
 
   	componentWillReceiveProps(nextProps) {
@@ -160,40 +157,31 @@ class Controller extends Component {
 		}
 	}
 
-  render(){
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Controller Screen
-        </Text>
-        <Slider maximumValue={143} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.sendDataThroughService(value, this.state.deviceObject, this.state.connectionData.writeServiceUUID, this.state.connectionData.writeCharacteristicUUID)}}>
-        </Slider>
-		<TouchableHighlight onPress={()=>{this.invert()}} style={{
-          height: 40,
-          width: 260,
-          marginLeft: 20,
-          marginRight: 20,
-          backgroundColor: 'white',
-          borderRadius: 10,
-          borderWidth: 5,
-          borderColor: 'black',
-        }}>
-              <Text>
-                invert
-              </Text>
-            </TouchableHighlight>
-      </View>
-    )
-  }
+	navigationOptions = {
+		header: null
+	}
+  	render(){
+    	return (
+      		<View style={styles.container}>
+        		<Text style={styles.welcome}>
+          			Controller Screen
+        		</Text>
+        		<Slider maximumValue={143} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.sendDataThroughService(value, this.state.deviceObject, this.state.connectionData.writeServiceUUID, this.state.connectionData.writeCharacteristicUUID)}}>
+        		</Slider>
+				<TouchableHighlight onPress={()=>{this.invert()}} style={{height: 40, width: 260, marginLeft: 20, marginRight: 20, backgroundColor: 'white', borderRadius: 10, borderWidth: 5, borderColor: 'black'}}>
+              		<Text>
+                		invert
+              		</Text>
+            	</TouchableHighlight>
+      		</View>
+    	)
+  	}
 };
 
-// Controller.propTypes = {
-//   dispatch: PropTypes.func.isRequired,
-// };
-
-// Controller.navigationOptions = {
-//   header: null
-// };
+Controller.navigationOptions = {
+	title: 'Controller',
+	header: null
+};
 
 const mapStateToProps = state => ({
   myNav: state.NavReducer,
