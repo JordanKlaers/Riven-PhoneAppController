@@ -3,12 +3,6 @@ import { AppNavigator } from '../navigators/AppNavigator';
 import { NavigationActions } from 'react-navigation';
 
 function pushUpdateState(args){
-	if (args.nextState.bluetooth.count != args.count) {
-		var temp = Object.assign({}, args.state, {count: args.nextState.bluetooth.count})
-		args.setState(temp, () => {
-			args.forceUpdate();
-		})
-	}
     if(args.deviceObject != args.nextState.bluetooth.deviceObject) {
         var temp = Object.assign({}, args.state, {
             deviceObject: args.nextState.bluetooth.deviceObject
@@ -100,17 +94,11 @@ function saveNewDevice(args){
 }
 
 function removeDevice(args) {
-    var tempState = Object.assign({}, args.state, {
-        allSavedDevices: args.state.allSavedDevices.filter((deviceName)=>{
-          return deviceName != args.name;
-        })
-      })
-      args.setState(tempState, ()=> {
-        args.dispatch(args.delete(args.name));
-      })
+	args.dispatch(args.delete(args.name));
 }
 
 function selectDefaultDevice(args) {
+	console.log('selected this name_>', args.name);
     AsyncStorage.setItem('defaultDevice', args.name)
 	args.dispatch(args.set(args.name))
 	if (args.deviceObject && args.deviceObject.hasOwnProperty('id')) {
@@ -130,7 +118,7 @@ function selectDefaultDevice(args) {
 }
 
 function connectionStatus(connectToDevice) {
-	console.log('connection status');
+	console.log('props status', connectToDevice);
     if(connectToDevice === "In Progress"){
         return connectToDevice;
     }
@@ -141,16 +129,11 @@ function connectionStatus(connectToDevice) {
 
 function tryToConnect(args, name) {
 	var haveDispatched = false;
-	console.log('trying to connect');
-	console.log('what is ->', args.connectedToDevice);
     if(args.connectedToDevice != "Connected"){
         args.manager.startDeviceScan(null, null, (error, device) => {
-			console.log('what is it now ->', args.connectedToDevice);
         	if(args.connectedToDevice != "In Progress") {
-				console.log('not in progress yet');
 				if (!haveDispatched) {
 					haveDispatched = true;
-					console.log('setting to in progress');
 					args.dispatch(args.scan())
 					setTimeout(() => {
 						args.tookToLongToConnect()
@@ -160,10 +143,8 @@ function tryToConnect(args, name) {
         	if (error) {
           		return
 			}
-			console.log('device.name: ', device.name);
 			let scannedName = device.name || "";
 			if (scannedName.toLowerCase() == name.toLowerCase()) {  //should be 'raspberrypi'
-				console.log('found device');
 				saveBluetoothDeviceInformation(args, device);
         	}
       	});

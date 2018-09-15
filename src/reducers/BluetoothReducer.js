@@ -13,10 +13,18 @@ import { BleManager } from 'react-native-ble-plx';
         deviceObject: {},
 		deviceObject: null,
 		connectionData: null,
+		rerenderCount: 0
     }
 
 function BluetoothReducer(state= bluetooth, action) {
     switch (action.type) {
+		case 'increment':
+			var temp = Object.assign(
+				{}, 
+				state,
+				{rerenderCount: state.rerenderCount + 1}
+			);
+			return temp;
       	case 'Save Connection Data':
         	var temp = Object.assign(
 				{}, 

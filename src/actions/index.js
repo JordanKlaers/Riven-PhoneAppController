@@ -78,3 +78,9 @@ export const scanInProgress = (status = 'In Progress') => {
   }
 }
 
+
+export const increment = () => {
+	return {
+		type: 'increment'
+	}
+}

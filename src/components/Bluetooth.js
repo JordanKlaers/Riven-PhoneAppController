@@ -24,7 +24,8 @@ import {
   saveConnectionData,
   scanInProgress,
   TestAction,
-  clearConnectionData
+  clearConnectionData,
+  increment
 } from '../actions';
 import BluetoothUtil from '../util/BluetoothUtil.js';
 
@@ -92,40 +93,19 @@ class Bluetooth extends Component {
   }
 
   	componentDidMount(state) {
-		console.log('did mount with - ---- -', this.props.bluetooth.connectedToDevice);
 		if(this.props.bluetooth.connectedToDevice == 'In Progress') {
 			this.props.dispatch(scanInProgress('no connection'))
-			var temp = Object.assign({}, this.state, {
-				connectedToDevice: "no connection"
-			});
-			this.setState(temp, ()=>{
-				this.state.manager.stopDeviceScan();
-			})
+			// var temp = Object.assign({}, this.state, {
+			// 	connectedToDevice: "no connection"
+			// });
+			// this.setState(temp, ()=>{
+			// 	this.state.manager.stopDeviceScan();
+			// })
 		}
   	}
-  componentWillReceiveProps(nextState){
-    this.count ++
-    const args = {
-      nextState: nextState,
-      dispatch: this.state.dispatch,
-      setState: this.setState,
-      forceUpdate: this.forceUpdate,
-      state: this.state,
-      manager: this.state.manager,
-      deviceObject: this.state.deviceObject,
-      navigateAfterConnection: this.state.navigateAfterConnection,
-      currentView: this.state.currentView,
-      connectedToDevice: this.state.connectedToDevice,
-      count: this.state.count
-	}
-    this.connectionStatus(nextState.connectedToDevice);
-    BluetoothUtil.pushUpdateState(args);
-    
+  componentWillReceiveProps(nextProps){
+    this.connectionStatus(nextProps.bluetooth.connectedToDevice);
   }
-
-  componentDidUpdate(prevProp, prevState) {
-  }
-
   navigationOptions = {
     header: null
   }
@@ -136,7 +116,7 @@ class Bluetooth extends Component {
 
   removeDevice = (name) => BluetoothUtil.removeDevice({name: name, state: this.state, setState: this.setState, dispatch: this.props.dispatch, delete: deleteDeviceNameFromStorage})
 
-  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({manager: this.state.manager, deviceObject: this.state.deviceObject, clearConnectionData: clearConnectionData, name: name, dispatch: this.props.dispatch, set: setSelectedDevice, tryToConnect: this.tryToConnect, forceUpdate: this.forceUpdate})
+  selectDefaultDevice = (name) => BluetoothUtil.selectDefaultDevice({manager: this.props.bluetooth.manager, deviceObject: this.props.bluetooth.deviceObject, clearConnectionData: clearConnectionData, name: name, dispatch: this.props.dispatch, set: setSelectedDevice, tryToConnect: this.tryToConnect})
 
   connectionStatus = (connectedToDevice) =>  BluetoothUtil.connectionStatus(connectedToDevice)
 
@@ -148,17 +128,17 @@ class Bluetooth extends Component {
   }
 
   
-  tryToConnect = (name) => BluetoothUtil.tryToConnect({clearConnectionData: clearConnectionData, tookToLongToConnect: this.tookToLongToConnect, saveConnectionData: saveConnectionData, defaultDevice: this.props.bluetooth.defaultDevice, connectedToDevice: this.props.bluetooth.connectedToDevice, manager: this.props.bluetooth.manager, dispatch: this.props.dispatch, scan: scanInProgress, save: saveConnectionData, setState: this.setState, forceUpdate: this.forceUpdate, state: this.state}, name) 
+  tryToConnect = (name) => BluetoothUtil.tryToConnect({clearConnectionData: clearConnectionData, tookToLongToConnect: this.tookToLongToConnect, saveConnectionData: saveConnectionData, defaultDevice: this.props.bluetooth.defaultDevice, connectedToDevice: this.props.bluetooth.connectedToDevice, manager: this.props.bluetooth.manager, dispatch: this.props.dispatch, scan: scanInProgress, save: saveConnectionData}, name) 
   
   changeTab = () => {
   }
 
 
   stopScan = () => {
-	this.state.manager.stopDeviceScan();
-	this.state.dispatch(scanInProgress('no connection'))
-	if (this.state.deviceObject && this.state.deviceObject.hasOwnProperty('id')) {
-		this.state.manager.cancelDeviceConnection(this.state.deviceObject.id)
+	this.props.bluetooth.manager.stopDeviceScan();
+	this.props.dispatch(scanInProgress('no connection'))
+	if (this.props.bluetooth.deviceObject && this.props.bluetooth.deviceObject.hasOwnProperty('id')) {
+		this.props.bluetooth.manager.cancelDeviceConnection(this.props.bluetooth.deviceObject.id)
 		.then(() => {
 		  // Success code
 		  console.log('Disconnected');
@@ -173,15 +153,16 @@ class Bluetooth extends Component {
     // this.setState(temp)
   }
 
-  	tookToLongToConnect = (currentView = this.state.currentView) => {
-        if(this.state.connectedToDevice == 'In Progress') {
-        	var temp = Object.assign({}, this.state, {
-            	connectedToDevice: "no connection"
-          	});
-          	this.setState(temp, ()=>{
-				this.state.dispatch(scanInProgress('no connection'))
-            	this.state.manager.stopDeviceScan();
-          	})
+  	tookToLongToConnect = () => {
+        if(this.props.bluetooth.connectedToDevice == 'In Progress') {
+        	// var temp = Object.assign({}, this.state, {
+            // 	connectedToDevice: "no connection"
+          	// });
+          	// this.setState(temp, ()=>{
+
+				this.props.dispatch(scanInProgress('no connection'))
+            	this.props.bluetooth.manager.stopDeviceScan();
+          	// })
         }
   	}
 
@@ -195,6 +176,18 @@ class Bluetooth extends Component {
       width: this.state.screenDIM.width
     }
     const style = {
+		listNameContainer: {
+			display: 'flex',
+			flexDirection: 'row'
+		},
+		listName: {
+			height: 30,
+			flex: 1
+		},
+		listX: {
+			width: 20,
+			height: 30
+		},
       upRight: {
         overlay: {
           position: 'absolute',
@@ -289,7 +282,7 @@ class Bluetooth extends Component {
                   </View>
                   <View style={style.upRight.right}>
                     <Text style={style.upRight.bluetoothText}>
-                      {this.state.deviceBluetoothstate ? "On" : "Off"}
+                      {this.props.bluetooth.deviceBluetoothstate ? "On" : "Off"}
                     </Text>
                   </View>
                 </View>
@@ -303,7 +296,7 @@ class Bluetooth extends Component {
                   <View style={style.upRight.right}>
                     <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.stopScan()}}>
                       <Text style={style.upRight.bluetoothText}>
-                        {this.props.bluetooth.connectedToDevice}
+					  	{this.props.bluetooth.connectedToDevice}
                       </Text>
                     </TouchableHighlight>
                   </View>
@@ -318,7 +311,7 @@ class Bluetooth extends Component {
                   <View style={style.upRight.right}>
                     <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.toggelDefaultDeviceSelection()}}>
                       <Text style={style.upRight.bluetoothText}>
-                        {this.state.defaultDevice}
+                        {this.props.bluetooth.defaultDevice} top
                       </Text>
                     </TouchableHighlight>
                   </View>
@@ -326,22 +319,24 @@ class Bluetooth extends Component {
             </View>
 
             <View style={style.upRight.deviceList} >
-            {this.state.allSavedDevices.map((name, indx) =>(
-              <View key={indx}>
-                 <TouchableHighlight onPress={()=>{this.selectDefaultDevice(name)}}>
-                   <Text>
+            {this.props.bluetooth.allSavedDevices.map((name, indx) =>(
+              <View key={indx} style={style.listNameContainer}>
+                 <TouchableHighlight style={style.listName} onPress={()=>{this.selectDefaultDevice(name)}}>
+                   <Text style={style.listName}>
                      {name}
                    </Text>
                  </TouchableHighlight>
-                   <Button onPress={()=>{
-                     this.removeDevice(name)
-                   }} title="x" />
+				 <TouchableHighlight style={style.listX} onPress={()=>{this.removeDevice(name)}}>
+                   <Text style={style.listX}>
+                     X
+                   </Text>
+                 </TouchableHighlight>
                </View>
             ))}
             </View>
 
 
-            <TouchableHighlight onPress={()=>{this.tryToConnect(this.state.defaultDevice, this.state.connectedToDevice, this.state.manager)}} style={style.upRight.saveButton}>
+            <TouchableHighlight onPress={()=>{this.tryToConnect(this.props.bluetooth.defaultDevice, this.props.bluetooth.connectedToDevice, this.props.bluetooth.manager)}} style={style.upRight.saveButton}>
               <Text>
                 Try to Connect
               </Text>
@@ -359,9 +354,9 @@ class Bluetooth extends Component {
               </Text>
             </TouchableHighlight>
 
-            <TouchableHighlight onPress={()=>{this.changeTab()}} style={style.upRight.saveButton}>
+            <TouchableHighlight onPress={()=>{this.props.dispatch(increment())}} style={style.upRight.saveButton}>
               <Text>
-                tab Nav
+                {this.props.bluetooth.rerenderCount}
               </Text>
             </TouchableHighlight>
           </View>
@@ -390,7 +385,7 @@ class Bluetooth extends Component {
                   </View>
                   <View style={style.upRight.right}>
                     <Text style={style.upRight.bluetoothText}>
-                      {this.state.deviceBluetoothstate ? "On" : "Off"}
+                      {this.props.bluetooth.deviceBluetoothstate ? "On" : "Off"}
                     </Text>
                   </View>
                 </View>
@@ -404,7 +399,7 @@ class Bluetooth extends Component {
                   <View style={style.upRight.right}>
                     <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.stopScan()}}>
                       <Text style={style.upRight.bluetoothText}>
-                        {this.state.connectedToDevice}
+						{this.props.bluetooth.connectedToDevice}
                       </Text>
                     </TouchableHighlight>
                   </View>
@@ -419,14 +414,14 @@ class Bluetooth extends Component {
                   <View style={style.upRight.right}>
                     <TouchableHighlight style={style.upRight.deviceNameTouchable} onPress={()=>{this.toggelDefaultDeviceSelection()}}>
                       <Text style={style.upRight.bluetoothText}>
-                        {this.state.defaultDevice}
+                        {this.props.bluetooth.defaultDevice}
                       </Text>
                     </TouchableHighlight>
                   </View>
                 </View>
             </View>
 
-            <TouchableHighlight onPress={()=>{this.tryToConnect(this.state.defaultDevice, this.state.connectedToDevice, this.state.manager)}} style={style.upRight.saveButton}>
+            <TouchableHighlight onPress={()=>{this.tryToConnect(this.props.bluetooth.defaultDevice, this.state.connectedToDevice, this.state.manager)}} style={style.upRight.saveButton}>
               <Text>
                 Try to Connect
               </Text>
@@ -443,9 +438,9 @@ class Bluetooth extends Component {
               </Text>
             </TouchableHighlight>
 
-            <TouchableHighlight onPress={()=>{this.changeTab()}} style={style.upRight.saveButton}>
+            <TouchableHighlight onPress={()=>{this.props.dispatch(increment())}} style={style.upRight.saveButton}>
               <Text>
-                tab nav
+                {this.props.bluetooth.rerenderCount}
               </Text>
             </TouchableHighlight>
           </View>

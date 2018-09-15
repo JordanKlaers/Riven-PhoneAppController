@@ -35,9 +35,10 @@ function autoConnect(args) {
             })
         }
         else {
-          //not connected 
-          if (args.deviceBluetoothstate && (args.defaultDevice !=  "")){ // if we have a device name and bluetooth is on try to connect
+		  //not connected 
+          if (args.deviceBluetoothstate){ // if we have a device name and bluetooth is on try to connect
             if(!args.haveTriedToConnect){
+				console.log('trying to connect');
                 args.setState(Object.assign({}, this.state, {
                 haveTriedToConnect: true
               }), tryToConnect(args))                   //this function is below
