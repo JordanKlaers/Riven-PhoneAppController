@@ -30,8 +30,8 @@ function updateText(args) {
 }
 
 function saveNewDevice(args){
-    if(args.state.textInput != "" && !args.state.allSavedDevices.includes(args.state.textInput.toLowerCase().replace(/\s+/g, ''))) {
-        args.dispatch(args.save(args.state.textInput.toLowerCase().replace(/\s+/g, '')))
+    if(args.state.textInput != "" && !args.allSavedDevices.includes(args.state.textInput)) {
+        args.dispatch(args.save(args.state.textInput))
     }
 }
 
@@ -86,7 +86,9 @@ function tryToConnect(args, name) {
           		return
 			}
 			let scannedName = device.name || "";
+			// console.log(scannedName);
 			if (scannedName.toLowerCase() == name.toLowerCase()) {  //should be 'raspberrypi'
+			console.log('found it');
 				saveBluetoothDeviceInformation(args, device);
         	}
       	});
@@ -104,13 +106,17 @@ function saveBluetoothDeviceInformation(args, device) {
 		return device.discoverAllServicesAndCharacteristics();
 	})
 	.then((device) => {
+		console.log('device ->', device);
 		connectionData.deviceID = device.id
 		return args.manager.servicesForDevice(device.id);
 	})
 	.then((services) => {              		
 		var service = null;
-		for(let i=0; i<services.length; i++) {
-			if(services[i].uuid == "0000ffe0-0000-1000-8000-00805f9b34fb" && service == null){
+		
+		for(let i=0; i< services.length; i++) {
+			console.log(`service-${i} `, services[i].uuid);
+			if(services[i].uuid == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" && service == null){
+			// 0000ffe0-0000-1000-8000-00805f9b34fb  -- WAS FOR THE hm10
 				service = services[i].uuid;
 			}
 		}
@@ -118,8 +124,9 @@ function saveBluetoothDeviceInformation(args, device) {
 		return args.manager.characteristicsForDevice(connectionData.deviceID, connectionData.writeServiceUUID)
 		})
 	.then((characteristic)=> {
-		if (characteristic[0]) {
-			connectionData.writeCharacteristicUUID = characteristic[0].uuid
+		console.log('characteristics', characteristic[1].uuid);
+		if (characteristic[1]) {
+			connectionData.writeCharacteristicUUID = characteristic[1].uuid
 			args.dispatch({
 				type: 'Save Connection Data', 
 				connectionData, 

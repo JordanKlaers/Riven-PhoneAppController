@@ -92,7 +92,7 @@ class Bluetooth extends Component {
 
   	updateText = (input) => BluetoothUtil.updateText({input, setState: this.setState, state: this.state});
 
-  	saveNewDevice = () => BluetoothUtil.saveNewDevice({state: this.state, dispatch: this.props.dispatch, save: saveDeviceNameTOStorage});
+  	saveNewDevice = () => BluetoothUtil.saveNewDevice({allSavedDevices: this.props.bluetooth.allSavedDevices, state: this.state, dispatch: this.props.dispatch, save: saveDeviceNameTOStorage});
 
  	removeDevice = (name) => BluetoothUtil.removeDevice({name: name, state: this.state, setState: this.setState, dispatch: this.props.dispatch, delete: deleteDeviceNameFromStorage})
 
