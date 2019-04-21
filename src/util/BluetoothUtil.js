@@ -40,18 +40,17 @@ function removeDevice(args) {
 }
 
 function selectDefaultDevice(args) {
-	console.log('selected this name_>', args.name);
     AsyncStorage.setItem('defaultDevice', args.name)
 	args.dispatch(args.set(args.name))
 	if (args.deviceObject && args.deviceObject.hasOwnProperty('id')) {
 		args.manager.cancelDeviceConnection(args.deviceObject.id)
 		.then(() => {
 		  // Success code
-		  console.log('Disconnected');
+		  //disconnected
 		})
 		.catch((error) => {
 		  // Failure code
-		  console.log('failed to disconnected');
+		  //failed to disconnect
 		  console.log(error);
 		});
 	}
@@ -60,7 +59,6 @@ function selectDefaultDevice(args) {
 }
 
 function connectionStatus(connectToDevice) {
-	console.log('props status', connectToDevice);
     if(connectToDevice === "In Progress"){
         return connectToDevice;
     }
@@ -86,9 +84,7 @@ function tryToConnect(args, name) {
           		return
 			}
 			let scannedName = device.name || "";
-			// console.log(scannedName);
 			if (scannedName.toLowerCase() == name.toLowerCase()) {  //should be 'raspberrypi'
-			console.log('found it');
 				saveBluetoothDeviceInformation(args, device);
         	}
       	});
@@ -106,7 +102,6 @@ function saveBluetoothDeviceInformation(args, device) {
 		return device.discoverAllServicesAndCharacteristics();
 	})
 	.then((device) => {
-		console.log('device ->', device);
 		connectionData.deviceID = device.id
 		return args.manager.servicesForDevice(device.id);
 	})
@@ -114,7 +109,6 @@ function saveBluetoothDeviceInformation(args, device) {
 		var service = null;
 		
 		for(let i=0; i< services.length; i++) {
-			console.log(`service-${i} `, services[i].uuid);
 			if(services[i].uuid == "6e400001-b5a3-f393-e0a9-e50e24dcca9e" && service == null){
 			// 0000ffe0-0000-1000-8000-00805f9b34fb  -- WAS FOR THE hm10
 				service = services[i].uuid;
@@ -124,7 +118,6 @@ function saveBluetoothDeviceInformation(args, device) {
 		return args.manager.characteristicsForDevice(connectionData.deviceID, connectionData.writeServiceUUID)
 		})
 	.then((characteristic)=> {
-		console.log('characteristics', characteristic[1].uuid);
 		if (characteristic[1]) {
 			connectionData.writeCharacteristicUUID = characteristic[1].uuid
 			args.dispatch({

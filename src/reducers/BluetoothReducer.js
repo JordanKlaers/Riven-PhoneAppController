@@ -7,7 +7,7 @@ import { BleManager } from 'react-native-ble-plx';
     var bluetooth = {
         manager: manager,
         deviceBluetoothstate: bluetoothSubscription,
-        defaultDevice: '',           //currentDeviceName
+        defaultDevice: null,           //currentDeviceName
         connectedToDevice: "No connection",         //false in progress or true for connected
         allSavedDevices: [],         //the key == the device name for all
         deviceObject: {},
@@ -70,7 +70,6 @@ function BluetoothReducer(state= bluetooth, action) {
 				state, 
 				{ defaultDevice: action.name }
 			);
-			console.log('set to --> ', action.name);
         	return temp;
       	case 'Save Device Name To Storage':
         	var result = Object.assign(

@@ -7,6 +7,7 @@ import { StyleSheet,
   AsyncStorage,
   Slider,
   TouchableHighlight,
+  Image,
   Dimensions } from 'react-native';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -17,12 +18,14 @@ import {
   btoa
 } from 'b2a';
 
+const backgroundImage = require('../../image/rivenSword.jpg');
+
 const styles = StyleSheet.create({
   	container: {
 	    flex: 1,
 	    justifyContent: 'center',
 	    alignItems: 'center',
-   		backgroundColor: '#F5FCFF',
+   		backgroundColor: 'white',
   	},
   	welcome: {
 	    fontSize: 20,
@@ -63,7 +66,10 @@ class Controller extends Component {
         	dispatch: props.navigation.dispatch,
 			count: props.bluetooth.count,
 			wait: false,
-			dataToSend: [0,1,2,3,4,5,6,7,8]
+			dataToSend: [0,1,2,3,4,5,6,7,8],
+			isSliderModalOpen: false,
+			command: '',
+			modalText: ''
       	}
     }
 
@@ -181,30 +187,48 @@ class Controller extends Component {
 		return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
 	}
 
-  	
-	sendBatchValues = (deviceObject, writeService, writeChar) => {
-		for (let i = 0; i < 100; i++) {
-			this.dataToSend.push(45);
-		}
-		this.theInterval = setInterval(this.intervalCallBack, 20);
-	}
 	intervalCallBack = (value) => {
 		let currentSliderValueToSend = this.dataToSend.shift();
-		this.sendDataThroughService(currentSliderValueToSend.value, currentSliderValueToSend.command, this.props.bluetooth.deviceObject, this.props.bluetooth.connectionData.writeServiceUUID, this.props.bluetooth.connectionData.writeCharacteristicUUID)
+		let colorValue = currentSliderValueToSend && currentSliderValueToSend.value;
+		let command = currentSliderValueToSend && currentSliderValueToSend.command;
+
+		let charUUID = this.props.bluetooth && this.props.bluetooth.connectionData && this.props.bluetooth.connectionData.writeCharacteristicUUID
+		let deviceObj = this.props.bluetooth && this.props.bluetooth.deviceObject || {};
+		let writeUUID = this.props.bluetooth && this.props.bluetooth.connectionData && this.props.bluetooth.connectionData.writeServiceUUID;
+		if (colorValue && command && charUUID && writeUUID && deviceObj) {
+			this.sendDataThroughService(colorValue, command, deviceObj, writeUUID, charUUID);
+		}
 		if (this.dataToSend.length == 0) {
 			clearInterval(this.theInterval);
 		}
 	}
 	sendDataThroughService = async (value, command, deviceObject, writeService, writeChar) => {
+		
 		value = Math.floor(value);
-		// console.log('value', value);
-		let hsaValue = this.hslToRgb(value/360);
-		let fullCommandRGB = "<" + command + "," + this.format(hsaValue[0]) + "," + this.format(hsaValue[1]) + "," + this.format(hsaValue[2]) + ">";
-		console.log(fullCommandRGB);
+		
+		let fullCommandRGB = '';
+		if (command === 'P') {
+			fullCommandRGB = "<P," + this.format(value) + ",000,000>";	
+		} else {
+			let hsaValue = this.hslToRgb(value/360);
+			fullCommandRGB = "<" + command + "," + this.format(hsaValue[0]) + "," + this.format(hsaValue[1]) + "," + this.format(hsaValue[2]) + ">";
+		}
+		
 		let encodedString = btoa(fullCommandRGB);
 		if(Object.keys(deviceObject).length > 0) {
 			deviceObject.writeCharacteristicWithoutResponseForService(writeService, writeChar, encodedString);
 		}
+	}
+
+	sendRivenUltCommand = async () => {
+		let charUUID = this.props.bluetooth && this.props.bluetooth.connectionData && this.props.bluetooth.connectionData.writeCharacteristicUUID
+		let deviceObject = this.props.bluetooth && this.props.bluetooth.deviceObject || {};
+		let writeUUID = this.props.bluetooth && this.props.bluetooth.connectionData && this.props.bluetooth.connectionData.writeServiceUUID;
+		let encodedString = btoa("<U,000,000,000>");
+		if(Object.keys(deviceObject).length > 0 && charUUID && writeUUID) {
+			deviceObject.writeCharacteristicWithoutResponseForService(writeUUID, charUUID, encodedString);
+		}
+
 	}
 	
 	shouldSendData = true;
@@ -234,47 +258,204 @@ class Controller extends Component {
 		}
 	}
 
+	setModalState = (command, text) => {
+		tempState = Object.assign({}, this.state, {
+			isSliderModalOpen: this.state.command === command ? !this.state.isSliderModalOpen : true,
+			command,
+			modalText: text
+		})
+		this.setState(tempState);
+	}
+
 	navigationOptions = {
 		header: null
 	}
   	render(){
-    	return (
-      		<View style={styles.container}>
-        		<Text style={styles.welcome}>
-          			Controller Screen
-        		</Text>
-				<Text style={styles.textBlock}>
-                	Blade
-              	</Text>
-        		<Slider maximumValue={360} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.throttle(value, 'B')}}>
-        		</Slider>
-				<Text style={styles.textBlock}>
-                	Center
-              	</Text>
-        		<Slider maximumValue={360} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.throttle(value, 'C')}}>
-        		</Slider>
-				<Text style={styles.textBlock}>
-                	Side
-              	</Text>
-        		<Slider maximumValue={360} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.throttle(value, 'S')}}>
-        		</Slider>
-				<Text style={styles.textBlock}>
-                	Hilt
-              	</Text>
-        		<Slider maximumValue={360} minimumValue={0} style={{height: 40, width: this.state.screenDIM.width * 0.8}} onValueChange={(value)=>{this.throttle(value, 'H')}}>
-        		</Slider>
-				<TouchableHighlight onPress={()=>{this.throttle(0, 'U')}} style={{height: 40, width: 260, marginLeft: 20, marginRight: 20, backgroundColor: 'white', borderRadius: 10, borderWidth: 5, borderColor: 'black'}}>
-              		<Text>
-                		Ult
-              		</Text>
-            	</TouchableHighlight>
-				<TouchableHighlight onPress={()=>{this.sendBatchValues(this.props.bluetooth.deviceObject, this.props.bluetooth.connectionData.writeServiceUUID, this.props.bluetooth.connectionData.writeCharacteristicUUID)}} style={{height: 40, width: 260, marginLeft: 20, marginRight: 20, backgroundColor: 'white', borderRadius: 10, borderWidth: 5, borderColor: 'black'}}>
-              		<Text>
-                		Send sendBatchValues
-              		</Text>
-            	</TouchableHighlight>
-      		</View>
-    	)
+		const dimensions = {
+			height: this.state.screenDIM.height,
+			width: this.state.screenDIM.width
+		}
+		const style = {
+			ultButton: {
+				position: 'absolute',
+				left: '50%',
+				transform: [{translateX: -100}, {translateY: -90}],
+				marginTop: 15,
+				width: 200,
+				height: 70,
+				borderRadius: 10,
+				borderWidth: 5,
+				borderColor: 'black',
+				backgroundColor: 'white',
+				zIndex: 10
+			},
+			bladeTouchable: {
+				position: 'absolute',
+				left: '50%',
+				marginLeft: -80,
+				marginTop: 10,
+				height: 300,
+				width: 150,
+				backgroundColor: 'rgba(0, 0, 0, 0)'
+			},
+			centerTouchable: {
+				position: 'absolute',
+				left: '50%',
+				marginLeft: -60,
+				marginTop: 315,
+				height: 110,
+				width: 110,
+				backgroundColor: 'rgba(0, 0, 0, 0)'
+			},
+			rightTouchable: {
+				position: 'absolute',
+				left: '50%',
+				marginLeft: -170,
+				marginTop: 315,
+				height: 110,
+				width: 110,
+				backgroundColor: 'rgba(0, 0, 0, 0)'
+			},
+			leftTouchable: {
+				position: 'absolute',
+				left: '50%',
+				marginLeft: 50,
+				marginTop: 315,
+				height: 110,
+				width: 110,
+				backgroundColor: 'rgba(0, 0, 0, 0)'
+			},
+			hiltTouchable: {
+				position: 'absolute',
+				left: '50%',
+				marginLeft: -60,
+				marginTop: 445,
+				height: 80,
+				width: 110,
+				backgroundColor: 'rgba(0, 0, 0, 0)'
+			},
+			sliderModal: {
+				position: 'absolute',
+				left: '50%',
+				marginLeft: -155,
+				marginTop: 100,
+				height: 100,
+				width: 240,
+				borderRadius: 10,
+				borderWidth: 5,
+				borderColor: 'black',
+				backgroundColor: 'white',
+				zIndex: 10
+			},
+			brightnessModal: {
+				position: 'absolute',
+				left: '70%',
+				marginLeft: -60,
+				marginTop: 100,
+				height: 50,
+				width: 250,
+				borderRadius: 10,
+				borderWidth: 5,
+				borderColor: 'black',
+				backgroundColor: 'white',
+				zIndex: 11,
+				transform: [{rotateZ: '90deg'}]
+			},
+			sliderModalText: {
+				fontFamily: 'monospace',
+				fontWeight: 'bold',
+				color: 'black',
+				marginLeft: 15,
+				marginBottom: 15,
+				marginTop: 15
+			},
+			ultModalText: {
+				fontFamily: 'monospace',
+				fontWeight: 'bold',
+				color: 'black',
+				marginLeft: 50,
+				marginTop: 15
+			},
+			slider: {
+				width: '100%',
+			},
+			verticalSlider: {
+				width: '100%',
+				height: '100%'
+			}
+		}
+		if (this.state.isSliderModalOpen)  {
+			return (
+				<View style={styles.container}>
+					<Image style={{height: dimensions.height - 100, width: dimensions.width, position: "relative", top: 40}} resizeMode='contain' source={backgroundImage}>
+					  <View style={style.sliderModal}>
+						  <Text style={style.sliderModalText}>
+							  {this.state.modalText}
+						  </Text>
+						  <Slider maximumValue={360} minimumValue={0} style={style.slider} onValueChange={(value)=>{this.throttle(value, this.state.command)}}></Slider> 
+					  </View>
+					  <TouchableHighlight style={style.ultButton} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.sendRivenUltCommand()}}>
+						  <View style={styles.sliderModal}>
+							<Text style={style.ultModalText}>
+								Rivens Ult
+							</Text>
+						  </View>
+					  </TouchableHighlight>
+					  <View style={style.brightnessModal}>
+						  <Slider maximumValue={0} minimumValue={255} style={style.verticalSlider} onValueChange={(value)=>{this.throttle(value, "P")}}></Slider> 
+					  </View>
+					  <TouchableHighlight style={style.bladeTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('B', 'Blade')}}>
+						  <View style={styles.bladeTouchable}></View>
+					  </TouchableHighlight>
+					  <TouchableHighlight style={style.centerTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('C', 'Center Triangle')}}>
+						  <View style={styles.centerTouchable}></View>
+					  </TouchableHighlight>
+					  <TouchableHighlight style={style.rightTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('S', 'Side Triangles')}}>
+						  <View style={styles.rightTouchable}></View>
+					  </TouchableHighlight>
+					  <TouchableHighlight style={style.leftTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('S', 'Side Triangles')}}>
+						  <View style={styles.leftTouchable}></View>
+					  </TouchableHighlight>
+					  <TouchableHighlight style={style.hiltTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('H', 'Hilt')}}>
+						  <View style={styles.hiltTouchable}></View>
+					  </TouchableHighlight>
+				  </Image>
+				</View>
+		  )
+		} else {
+			return (
+				<View style={styles.container}>
+					<Image style={{height: dimensions.height - 100, width: dimensions.width, position: "relative", top: 40}} resizeMode='contain' source={backgroundImage}>
+						<TouchableHighlight style={style.ultButton} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.sendRivenUltCommand()}}>
+							<View style={styles.sliderModal}>
+								<Text style={style.ultModalText}>
+									Rivens Ult
+								</Text>
+							</View>
+						</TouchableHighlight>
+						<View style={style.brightnessModal}>
+							<Slider maximumValue={0} minimumValue={255} style={style.verticalSlider} onValueChange={(value)=>{this.throttle(value, "P")}}></Slider> 
+					  	</View>
+						<TouchableHighlight style={style.bladeTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('B', 'Blade')}}>
+							<View style={styles.bladeTouchable}></View>
+						</TouchableHighlight>
+						<TouchableHighlight style={style.centerTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('C', 'Center Triangle')}}>
+							<View style={styles.centerTouchable}></View>
+						</TouchableHighlight>
+						<TouchableHighlight style={style.rightTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('S', 'Side Triangles')}}>
+							<View style={styles.rightTouchable}></View>
+						</TouchableHighlight>
+						<TouchableHighlight style={style.leftTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('S', 'Side Triangles')}}>
+							<View style={styles.leftTouchable}></View>
+						</TouchableHighlight>
+						<TouchableHighlight style={style.hiltTouchable} activeOpacity={0} underlayColor={'rgba(0,0,0,0)'} onPress={()=>{this.setModalState('H', 'Hilt')}}>
+							<View style={styles.hiltTouchable}></View>
+						</TouchableHighlight>
+					</Image>
+				</View>
+		  	)
+		}
+    	
   	}
 };
 

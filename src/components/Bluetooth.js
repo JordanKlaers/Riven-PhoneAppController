@@ -117,10 +117,10 @@ class Bluetooth extends Component {
 		if (this.props.bluetooth.deviceObject && this.props.bluetooth.deviceObject.hasOwnProperty('id')) {
 			this.props.bluetooth.manager.cancelDeviceConnection(this.props.bluetooth.deviceObject.id)
 			.then(() => {
-				console.log('Disconnected');
+				//disconnected
 			})
 			.catch((error) => {
-				console.log('failed to disconnected');
+				//failed to disconnect
 				console.log(error);
 			});
 		}
@@ -157,6 +157,11 @@ class Bluetooth extends Component {
 				width: 20,
 				height: 30
 			},
+			textStyle: {
+				fontFamily: 'monospace',
+				fontWeight: 'bold',
+				color: 'black'
+			},
 			upRight: {
 				overlay: {
 					position: 'absolute',
@@ -187,6 +192,9 @@ class Bluetooth extends Component {
 					height: 50
 				},
 				bluetoothText: {
+					fontFamily: 'monospace',
+					fontWeight: 'bold',
+					color: 'black',
 					margin: 15
 				},
 				deviceNameTouchable: {
@@ -199,6 +207,7 @@ class Bluetooth extends Component {
 					width: dimensions.width - 60,
 					marginLeft: 20,
 					marginRight: 20,
+					marginBottom: 10,
 					backgroundColor: 'white',
 					borderRadius: 10,
 					borderWidth: 5,
@@ -218,10 +227,11 @@ class Bluetooth extends Component {
 					width: dimensions.width - 60,
 					marginLeft: 20,
 					marginRight: 20,
+					marginBottom: 10,
 					backgroundColor: 'white',
 					borderRadius: 10,
 					borderWidth: 5,
-					borderColor: 'black',
+					borderColor: 'black'
 				}
 			}
 		}
@@ -279,12 +289,12 @@ class Bluetooth extends Component {
             			{this.props.bluetooth.allSavedDevices.map((name, indx) =>(
 							<View key={indx} style={style.listNameContainer}>
 								<TouchableHighlight style={style.listName} onPress={()=>{this.selectDefaultDevice(name)}}>
-									<Text style={style.listName}>
+									<Text style={style.textStyle}>
 										{name}
 									</Text>
 								</TouchableHighlight>
 								<TouchableHighlight style={style.listX} onPress={()=>{this.removeDevice(name)}}>
-									<Text style={style.listX}>
+									<Text style={style.textStyle}>
 										X
 									</Text>
 								</TouchableHighlight>
@@ -292,21 +302,16 @@ class Bluetooth extends Component {
             			))}
             		</View>
 					<TouchableHighlight onPress={()=>{this.tryToConnect(this.props.bluetooth.defaultDevice, this.props.bluetooth.connectedToDevice, this.props.bluetooth.manager)}} style={style.upRight.saveButton}>
-              			<Text>
+						<Text style={style.textStyle}>
                 			Try to Connect
               			</Text>
             		</TouchableHighlight>
 		            <TextInput style={style.upRight.deviceNameInput} onChangeText={(input)=>{this.updateText(input, this.setState)}}/>
 					<TouchableHighlight onPress={()=>{this.saveNewDevice()}} style={style.upRight.saveButton}>
-						<Text>
+						<Text style={style.textStyle}>
 							Save
 						</Text>
 					</TouchableHighlight>
-            		<TouchableHighlight onPress={()=>{this.props.dispatch(increment())}} style={style.upRight.saveButton}>
-              			<Text>
-                			{this.props.bluetooth.rerenderCount}
-              			</Text>
-            		</TouchableHighlight>
           		</View>
         	</View>
         	)
@@ -358,19 +363,14 @@ class Bluetooth extends Component {
 						</View>
 					</View>
 						<TouchableHighlight onPress={()=>{this.tryToConnect(this.props.bluetooth.defaultDevice, this.state.connectedToDevice, this.state.manager)}} style={style.upRight.saveButton}>
-							<Text>
+							<Text style={style.textStyle}>
 								Try to Connect
 							</Text>
 						</TouchableHighlight>
 						<TextInput style={style.upRight.deviceNameInput} onChangeText={(input)=>{this.updateText(input)}}/>
 						<TouchableHighlight onPress={()=>{this.saveNewDevice()}} style={style.upRight.saveButton}>
-							<Text>
+							<Text style={style.textStyle}>
 								Save
-							</Text>
-						</TouchableHighlight>
-						<TouchableHighlight onPress={()=>{this.props.dispatch(increment())}} style={style.upRight.saveButton}>
-							<Text>
-								{this.props.bluetooth.rerenderCount}
 							</Text>
 						</TouchableHighlight>
 					</View>

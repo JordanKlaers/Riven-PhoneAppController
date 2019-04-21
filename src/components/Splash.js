@@ -69,14 +69,9 @@ class Splash extends Component {
       		forceUpdate: this.forceUpdate,
       		tookToLongToConnect: this.tookToLongToConnect
 		}
-    	SplashUtil.autoConnect(args);
-  	}
-
-  	componentWillReceiveProps(nextState){
-		  //console.log('will recieve -> device bluetooth state ->', nextState.bluetooth.deviceBluetoothstate);
-	  	//documents say to use this function to react to prop changes before render function
-		//calling setState will not trigger rerender
-		// SplashUtil.pushUpdateState(nextState, this.state, this.setState, this.forceUpdate);
+		if (args.defaultDevice) {
+			SplashUtil.autoConnect(args);
+		}
   	}
 
   tookToLongToConnect = (currentView = this.props.myNav.index) => {

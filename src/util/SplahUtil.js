@@ -38,7 +38,6 @@ function autoConnect(args) {
 		  //not connected 
           if (args.deviceBluetoothstate){ // if we have a device name and bluetooth is on try to connect
             if(!args.haveTriedToConnect){
-				console.log('trying to connect');
                 args.setState(Object.assign({}, this.state, {
                 haveTriedToConnect: true
               }), tryToConnect(args))                   //this function is below
@@ -46,8 +45,9 @@ function autoConnect(args) {
             else {
                 if(args.connectedToDevice != "In progress"){
                     setTimeout(()=>{
+						args.manager.stopDeviceScan();
                         args.tookToLongToConnect();
-                    },3000);
+                    },5000);
                 }
             }
           }
@@ -67,10 +67,8 @@ function tryToConnect(args) {
         	if (error) {
           		return
 			}
-			let scannedName = '"'; //forcing splash to not work to test
-			// device.name || "";
+			let scannedName = device.name || "_";
 			if (scannedName.toLowerCase() == args.defaultDevice.toLowerCase()) {  //should be 'raspberrypi'
-				console.log('found device');
 				bluetoothUtil.saveBluetoothDeviceInformation(args, device);
         	}
       	});

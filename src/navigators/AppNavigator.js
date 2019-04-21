@@ -19,8 +19,9 @@ const TabNav = TabNavigator({
     tabBarPosition: 'top',
     animationEnabled: true,
     tabBarOptions: {
-      activeTintColor: '#e91e63',
-    },
+	  activeTintColor: '#e91e63',
+	},
+	navigationOptions: {  tabBarVisible: false }
   });
 
 export const AppNavigator = StackNavigator({
